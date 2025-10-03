@@ -12,6 +12,9 @@
   - 「すべてのラベルが No であるデータ群」(no_dataset)に分ける
 2. yes_dataset の分割
   - yes_train_dataset: 各ラベルの Yes のデータが 4 個になるようにランダムサンプリングで集める
+    - yes_indices: あるラベルの値が Yes である行番号
+    - flag_indices: flag の値が Yes である行番号
+    - ラベルの値が Yes で flag の値が No であるデータを集めたい
   - yes_test_dataset: yes_train_dataset 以外の yes_dataset のデータ
 3. no_dataset の分割
   - no_train_dataset: yes_train_dataset の個数だけランダムサンプリングで収集

@@ -1,20 +1,18 @@
-# import sys
-# import os
-# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from datasets import load_dataset, Dataset, concatenate_datasets
 from setfit import (
 	SetFitModel,
 	Trainer,
 	TrainingArguments,
-	sample_dataset
 )
 import torch
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import numpy as np
 
 import utils
-import random
 import json
 from datetime import datetime
 from pathlib import Path
@@ -26,6 +24,10 @@ from tqdm import tqdm
 class Args(Tap):
 	yes_dataset_path: str = "data/toxicity_ver2_allyesdata.jsonl"
 	allno_data_path: str = "data/toxicity_ver2_allnodata.jsonl"
+	
+	train_path: str = "data/llmjp_toxicity_dataset/train_dataset.jsonl"
+	test_path: str = "data/llmjp_toxicity_dataset/test_dataset.jsonl"
+
 	corpus_path: str = "data/CC-MAIN-2023-23/CC-MAIN-20230527223515-20230528013515/00000-ja-sentence.txt"
 	num_labels: int = 2
 	max_length: int = 1024
@@ -116,92 +118,14 @@ def main(args):
 		example["text"] = example["text"][:args.max_length]
 		return example
 	
-	# 1.1 Loading least toxic yes_dataset
-	yes_dataset = load_dataset("json", data_files=args.yes_dataset_path, split="train")
-	yes_dataset = yes_dataset.remove_columns(["label"])
-	yes_dataset = yes_dataset.map(truncate_text)
-	tasknames = [task for task in yes_dataset.column_names if task not in ["id", "text"]]
-
-	# 1.2 Loading non-toxic yes_dataset
-	no_dataset = load_dataset("json", data_files=args.allno_data_path, split="train")
-	no_dataset = no_dataset.remove_columns(["label"])
-	no_dataset = no_dataset.map(truncate_text)
-	# if args.debug:
-	# 	print("tasknames: ", tasknames)
-	# 	print("yes_dataset", yes_dataset)
-	# 	print("no_dataset", no_dataset)
-
-	# 1.3 Create category rank list
-	label_yes_counts = {taskname: Counter(yes_dataset[taskname])["yes"] for taskname in tasknames}
+	train_dataset = load_dataset("json", data_files=args.train_path, split="train")
+	test_dataset = load_dataset("json", data_files=args.test_path, split="train")
+	train_dataset = train_dataset.remove_columns(["label"]).map(truncate_text)
+	test_dataset = test_dataset.remove_columns(["label"]).map(truncate_text)
+	tasknames = [task for task in train_dataset.column_names if task not in ["id", "text"]]
+	label_yes_counts = {taskname: Counter(train_dataset[taskname])["yes"] for taskname in tasknames}
 	args.category_rank = [label for (label, _) in sorted(label_yes_counts.items(), key=lambda x: x[1])]
-	if args.debug:
-		print("Category: ", tasknames)
-		print("label_yes_counts:", label_yes_counts)
-		print("Category rank:", args.category_rank)
 	# Category rank: ['others', 'personal', 'illegal', 'violent', 'discriminatory', 'corporate', 'obscene']
-
-	# 2. Create train, test dataset from yes_dataset and no_dataset
-	# 2.1 split yes_dataset
-	yes_dataset = yes_dataset.add_column(name="flag", column=[0]*len(yes_dataset))
-	yes_df = yes_dataset.to_pandas()
-
-	for category in args.category_rank:
-		print(category)
-		# sort df
-		yes_df = yes_df.sort_values(by=[category, 'flag'], ascending=False).reset_index(drop=True)
-
-		# count yes num
-		yes_count = label_yes_counts[category]
-		exist_flag_count = yes_df['flag'].iloc[0:yes_count].sum()
-		# print(f"- before flag: {exist_flag_count}, {yes_df['flag'].iloc[0:yes_count].tolist()}")
-		# print(f"- {category}: {yes_df[category].iloc[0:yes_count].tolist()}")
-
-		# make random ids list
-		set_flag_count = min(args.num_samples, yes_count) - exist_flag_count
-		if set_flag_count > 0:
-			selected_yes_ids = set(random.sample(
-				range(exist_flag_count, yes_count),
-				set_flag_count
-			))
-
-		# set flag by ids list
-		for idx in selected_yes_ids:
-			yes_df.at[idx, "flag"] = 1
-		# print(f"- selected_yes_ids: {len(selected_yes_ids)}, {selected_yes_ids}")
-		# print(f"- after flag: {yes_count}, {yes_df['flag'].iloc[0:yes_count].tolist()}")
-		# print("---------------")
-
-	# split by flag
-	yes_train_df = yes_df[yes_df["flag"] == 1].reset_index(drop=True)
-	yes_test_df = yes_df[yes_df["flag"] == 0].reset_index(drop=True)
-	y_train_dataset = Dataset.from_pandas(yes_train_df, features=yes_dataset.features).remove_columns("flag")
-	y_test_dataset = Dataset.from_pandas(yes_test_df, features=yes_dataset.features).remove_columns("flag")
-
-	# 2.2 split no_dataset
-	# len of each dataset
-	yes_len = yes_dataset.num_rows
-	no_len = no_dataset.num_rows
-	y_train_len = y_train_dataset.num_rows
-	y_test_len = y_test_dataset.num_rows
-	n_train_len = y_train_len
-	n_test_len = min(no_len - n_train_len, int(y_test_len * no_len / yes_len))
-	if args.debug:
-		print("yes_dataset:", yes_len)
-		print("- y_train_dataset:", y_train_len)
-		print("- y_test_dataset:", y_test_len)
-		print("no_dataset:", no_len)
-		print("- n_train_len:", n_train_len)
-		print("- n_test_len:", n_test_len)
-
-	no_df = no_dataset.shuffle(seed=args.seed).to_pandas()
-	no_train_df = no_df.iloc[-n_train_len:].reset_index(drop=True)
-	no_test_df = no_df.iloc[:n_test_len].reset_index(drop=True)
-	n_train_dataset = Dataset.from_pandas(no_train_df, features=no_dataset.features)
-	n_test_dataset = Dataset.from_pandas(no_test_df, features=no_dataset.features)
-
-	# 2.3 Concatenate yes and no datasets
-	train_dataset = concatenate_datasets([y_train_dataset, n_train_dataset])
-	test_dataset = concatenate_datasets([y_test_dataset, n_test_dataset])
 
 	def encode_labels(example):
 		return {
@@ -214,11 +138,7 @@ def main(args):
 
 	if args.debug:
 		print("train_dataset:", train_dataset)
-		print(f"- y_train_dataset:", y_train_dataset)
-		print(f"- n_train_dataset:", n_train_dataset)
 		print("test_dataset:", test_dataset)
-		print(f"- y_test_dataset:", y_test_dataset)
-		print(f"- n_test_dataset:", n_test_dataset)
 		print(f"yes_count")
 		print(f"- train_yes_counts: {train_yes_counts}")
 		print(f"- test_yes_counts: {test_yes_counts}")
@@ -281,19 +201,6 @@ def main(args):
 	print(metrics)
 	args.log(metrics)
 	print(f"Metrics saved to, {args.output_dir} / log.csv")
-
-# {
-# 	'obscene': {'accuracy': 0.9930735930735931, 'precision': 0.0, 'recall': 0.0, 'f1': 0.0},
-# 	'discriminatory': {'accuracy': 0.6735930735930736,
-# 	'precision': 0.021108179419525065, 'recall': 0.5714285714285714, 'f1': 0.04071246819338423},
-# 	'violent': {'accuracy': 0.9030303030303031, 'precision': 0.08411214953271028, 'recall': 0.391304347826087, 'f1': 0.13846153846153847},
-# 	'illegal': {'accuracy': 0.9203463203463204, 'precision': 0.3146067415730337, 'recall': 0.4745762711864407, 'f1': 0.3783783783783784},
-# 	'personal': {'accuracy': 0.8761904761904762, 'precision': 0.4514285714285714, 'recall': 0.626984126984127, 'f1': 0.5249169435215947},
-# 	'corporate': {'accuracy': 0.754978354978355, 'precision': 0.287292817679558, 'recall': 0.8062015503875969, 'f1': 0.42362525458248473},
-# 	'others': {'accuracy': 0.8761904761904762, 'precision': 0.7487046632124352, 'recall': 0.8626865671641791, 'f1': 0.8016643550624133}
-# }
-
-
 	print("Saving model to", args.output_dir)
 	model.save_pretrained(args.output_dir)
 
