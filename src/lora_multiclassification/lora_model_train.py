@@ -126,6 +126,9 @@ class Args(Tap):
 		print("metrics: ", metrics)
 		print("tasknames: ", tasknames)
 		log_file = self.output_dir / f"log.csv"
+		categories_file = self.output_dir / f"categories.txt"
+		with categories_file.open("w") as f:
+			print(','.join(self.category_rank), file=f)
 		for category in tasknames:
 			category_metrics = {
 				"category": category,

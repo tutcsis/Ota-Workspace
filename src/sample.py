@@ -17,13 +17,16 @@ from typing import Literal
 from collections import Counter
 
 class Args(Tap):
-	dataset_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.json"
-	output_path: str = "data/twitter_stream/toxic_label_ja/2020-01/2020-01-01-00.jsonl"
-	# dataset_path: str = ""
-	# output_path: str = ""
-
+	dataset_path: str = "data/toxicity_ver2_allyesdata.jsonl"
+	corpus_dir: str = "data/CC-MAIN-2023-23/CC-MAIN-20230527223515-20230528013515/"
+	corpus_path: str = corpus_dir+"00000-ja-sentence.txt"
+	output_labels_path: str = corpus_dir+"00000-ja-labels.txt"
 	num_labels: int = 2
-	max_length: int = 1024
+	max_length: int = 256
+
+	corpus_release: str = ""
+	group: str = ""
+	file_count: int = 0
 
 	model_name: str = "cl-nagoya/ruri-v3-310m"
 	trained_model_path: str = "models/few-shot/ruri-v3-310m_len1024_yesno4"
@@ -32,6 +35,10 @@ class Args(Tap):
 	datasplit_rate: float = 0.3
 	datasplit_seed: int = 42
 
+
+	num_samples: int = 32
+	num_epochs: int = 1
+	batch_size: int = 8
 	sampling_strategy: Literal["oversampling", "undersampling", "unique"] = "oversampling"
 	target_strategy: Literal["one-vs-rest", "multi-output", "classifier-chain"] = "multi-output"
 
@@ -67,58 +74,50 @@ class Args(Tap):
 		return x
 
 def main(args):
-	def truncation_text(example):
-		example["text"] = example["text"][:args.max_length]
+	print("corpus_time: ", args.corpus_release)
+	print("group: ", args.group)
+	print("file_count: ", args.file_count)
 
-	with open(args.dataset_path) as f:
-		temp_dict = json.load(f)
-	dataset = Dataset.from_dict({
-		"tweet_id": list(int(k) for k in temp_dict.keys()),
-		"text": list(temp_dict.values())
-	})
-	print(dataset)
-	dataset = dataset.map(truncation_text)
+	for i in range(args.file_count):
+		ja_text_path = f"data/{args.corpus_release}/{args.group}/{i:05d}-ja-sentence.txt"
+		ja_out_label_path = f"prediction_data/{args.corpus_release}/{args.group}/{i:05d}-ja-label.txt"
 
-	if args.suppress_dynamo_errors:
-		import torch._dynamo
-		# torch._dynamo.config.suppress_errors = True
-		torch._dynamo.disable()
+		# read corpus dataset
+		with open(ja_text_path, "r", encoding="utf-8") as f:
+			texts = [line.strip() for line in f.readlines()]
+		corpus_dataset = Dataset.from_dict({"text": texts})
+		def truncate_text(example):
+			example["text"] = example["text"][:args.max_length]
+			return example
+		corpus_dataset = corpus_dataset.map(truncate_text)
 
-	model = SetFitModel.from_pretrained(
-		args.trained_model_path,
-		multi_target_strategy=args.target_strategy,
-		device=args.device
-	)
-	results = model.predict(dataset["text"]).numpy()
+		if args.suppress_dynamo_errors:
+			import torch._dynamo
+			# torch._dynamo.config.suppress_errors = True
+			torch._dynamo.disable()
 
-	with open(f"{args.trained_model_path}/categories.txt") as f2:
-		categories = [s.strip() for s in f2.readline().split(',')]
-		print('categories: ', categories)
-  
-	# results = []
-	# with open(args.output_path) as f:
-	# 	for line in f:
-	# 		results.append(np.array([int(x) for x in line.split(',')]))
-	# results = np.vstack(results)
-	# print('results: ', results)
-	# print(results.shape)
+		# read setfit trained model
+		model = SetFitModel.from_pretrained(
+			args.trained_model_path,
+			multi_target_strategy=args.target_strategy,
+			device=args.device
+		)
 
-	for i, category in enumerate(categories):
-		dataset = dataset.add_column(category, results[:,i].tolist())
-	print(dataset)
-	dataset_list = [
-    {key: row[key] for key in dataset.features.keys()}
-    for row in dataset
-	]
-	print(dataset_list[:3])
+		# if args.debug:
+		# 	# print("text sample: ", corpus_dataset["text"][:args.batch_size])
+		# 	print("Model loaded succece!! \n model: ", model)
 
-	with open(args.output_path, "w", encoding="utf-8") as outf:
-		for item in dataset_list:
-			outf.write(json.dumps(item, ensure_ascii=False) + '\n')
+		# predict
+		predict_list = list(corpus_dataset["text"])
+		# print(type(predict_list), predict_list)
+		results = model.predict(predict_list)
 
-	print("Prediction completed successfully!")
+		with open(ja_out_label_path, "w", encoding="utf-8") as outf:
+			results = results.numpy()
+			for row in results:
+				outf.write(f"{','.join(map(str, row))}\n")
 
-
+		print("Prediction completed successfully!")
 
 if __name__ == "__main__":
 	args = Args().parse_args()

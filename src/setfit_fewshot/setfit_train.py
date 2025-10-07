@@ -22,8 +22,8 @@ from collections import Counter
 from tqdm import tqdm
 
 class Args(Tap):
-	train_path: str = "data/llmjp_toxicity_dataset/train_dataset.jsonl"
-	test_path: str = "data/llmjp_toxicity_dataset/test_dataset.jsonl"
+	train_path: str = "data/llmjp_toxicity_dataset/train_len4_dataset.jsonl"
+	test_path: str = "data/llmjp_toxicity_dataset/test_len4_dataset.jsonl"
 
 	num_labels: int = 2
 	max_length: int = 1024
@@ -82,6 +82,9 @@ class Args(Tap):
 		print("metrics: ", metrics)
 		print("category_rank: ", self.category_rank)
 		log_file = self.output_dir / f"log.csv"
+		categories_file = self.output_dir / f"categories.txt"
+		with categories_file.open("w") as f:
+			print(','.join(self.category_rank), file=f)
 		for category in self.category_rank:
 			category_metrics = {
 				"category": category,

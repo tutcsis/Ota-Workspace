@@ -22,3 +22,14 @@
 4. 学習データとテストデータの生成
   - train_dataset: yes_train_dataset + no_train_dataset
   - test_dataset: yes_test_dataset + no_test_dataset
+
+## フォルダ構成
+src
+  - change2balance_data.py
+  - csv2md_table.py
+  - label_rate_analyze.py
+  lora_multiclassification
+  perspective_api_toxicity
+  setfit_fewshot
+  twitter_stream
+    - get_tweet.py: 
