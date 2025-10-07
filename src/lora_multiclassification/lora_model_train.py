@@ -1,8 +1,11 @@
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from datasets import load_dataset
 from transformers import (
 	AutoTokenizer,
 	AutoModel,
-	AutoModelForSequenceClassification,
 	BitsAndBytesConfig,
 	DataCollatorWithPadding,
 	Trainer,
@@ -15,25 +18,32 @@ from peft import (
 	LoraConfig,
 	get_peft_model,
 	prepare_model_for_kbit_training,
-	TaskType
 )
-from sklearn.metrics import accuracy_score, mean_squared_error
+from sklearn.metrics import (
+  accuracy_score,
+  precision_score,
+  recall_score,
+  f1_score,
+  confusion_matrix,
+)
 import numpy as np
 import torch
 
+import utils
 import json
 from datetime import datetime
 from pathlib import Path
 from tap import Tap
-from typing import Literal
-
+from tqdm import tqdm
 
 class Args(Tap):
 	dataset_path: str = "data/llmjp_toxicity_dataset/toxicity_dataset_ver2.jsonl"
-	dataset_version: Literal["ver1", "ver2"] = "ver2"
-	key_label: Literal["writer", "reader1", "reader2", "reader3", "avg_readers"] = "avg_readers"
+	train_path: str = "data/llmjp_toxicity_dataset/train_len16_dataset.jsonl"
+	test_path: str = "data/llmjp_toxicity_dataset/test_len16_dataset.jsonl"
+
 	num_labels: int = 2
 	max_length: int = 1024
+	num_categories: int = 7
 
 	model_name: str = "llm-jp/llm-jp-3-1.8b"
 	output_dir: str = ""
@@ -42,11 +52,13 @@ class Args(Tap):
 	batch_size: int = 8
 	per_device_batch_size: int = 8
 
+	test_rate: float = 0.2
 	learning_rate: float = 1e-4
 	weight_decay: float = 0.01
 	warmup_ratio: float = 0.2
 	lora_rank: int = 16
 	lora_dropout: float = 0.05
+	datasplit_seed: int = 42
 
 	debug: bool = False
 	use_bf16: bool = False # torch.cuda.is_bf16_supported() is unreliable.
@@ -73,9 +85,8 @@ class Args(Tap):
 		log_path = Path( self.output_dir, "parameters.txt" )
 		self.log_file = log_path.open( mode='w', buffering=1 )
 		print(json.dumps({
-			"dataset_path": self.dataset_path,
-			"dataset_version": self.dataset_version,
-			"key_label": self.key_label,
+			"train_path": self.train_path,
+			"test_path": self.test_path,
 			"model_name": self.model_name
 		}), file=self.log_file )
 
@@ -111,6 +122,35 @@ class Args(Tap):
 		print(json.dumps(x.to_dict()), file=self.log_file)
 		return x
 
+	def log(self, metrics: dict, tasknames: list) -> None:
+		print("metrics: ", metrics)
+		print("tasknames: ", tasknames)
+		log_file = self.output_dir / f"log.csv"
+		for category in tasknames:
+			category_metrics = {
+				"category": category,
+				"accuracy": metrics[f"eval_{category}"].get(f"accuracy", -1),
+				"precision": metrics[f"eval_{category}"].get(f"precision", -1),
+				"recall": metrics[f"eval_{category}"].get(f"recall", -1),
+				"f1": metrics[f"eval_{category}"].get(f"f1", -1),
+				"TN": metrics[f"eval_{category}"].get("TN", -1),
+				"FP": metrics[f"eval_{category}"].get("FP", -1),
+				"FN": metrics[f"eval_{category}"].get("FN", -1),
+				"TP": metrics[f"eval_{category}"].get("TP", -1),
+			}
+			utils.log(category_metrics, log_file)
+			tqdm.write(
+				f"category: {category} \t"
+				f"accuracy: {category_metrics[f'accuracy']:.4f} \t"
+				f"precision: {category_metrics[f'precision']:.4f} \t"
+				f"recall: {category_metrics[f'recall']:.4f} \t"
+				f"f1: {category_metrics[f'f1']:.4f} \t"
+				f"TN: {category_metrics[f'TN']} \t"
+				f"FP: {category_metrics[f'FP']} \t"
+				f"FN: {category_metrics[f'FN']} \t"
+				f"TP: {category_metrics[f'TP']}"
+			)
+			print(category, "ok!!")
 
 # https://zenn.dev/kitchy/articles/8282928b398cc7 is another implementation example using torch.nn.ModuleDict.
 class MultiTaskClassifier(torch.nn.Module):
@@ -163,21 +203,42 @@ class MultiTaskClassifier(torch.nn.Module):
 def main(args):
 	tokenizer = AutoTokenizer.from_pretrained(args.model_name)
 
-	dataset = load_dataset("json", data_file=args.dataset_path, split="train")
-	tasknames = list(dataset["train"].features[args.key_label].keys())
+	train_dataset = load_dataset("json", data_files=args.train_path, split="train")
+	test_dataset = load_dataset("json", data_files=args.test_path, split="train")
+	train_dataset = train_dataset.remove_columns(["id", "label"])
+	test_dataset = test_dataset.remove_columns(["id", "label"])
+	# dataset = load_dataset("json", data_files=args.dataset_path, split="train")
+	# dataset = dataset.remove_columns(["id", "label"])
+	
+	tasknames = train_dataset.column_names
+	# tasknames = dataset.column_names
+	tasknames.remove("text")
+	train_dataset = train_dataset.add_column("label", [[]]*len(train_dataset))
+	test_dataset = test_dataset.add_column("label", [[]]*len(test_dataset))
+	# dataset = dataset.add_column("label", [[]]*len(dataset))
+
+	def update_label(dataset, category):
+		dataset["label"].append(1 if dataset[category] == "yes" else 0)
+		return dataset
+	for task in tasknames:
+		train_dataset = train_dataset.map(lambda example: update_label(example, task))
+		test_dataset = test_dataset.map(lambda example: update_label(example, task))
+		# dataset = dataset.map(lambda example: update_label(example, task))
+
+	# dataset = dataset.train_test_split(test_size=args.test_rate, seed=args.datasplit_seed)
 	if args.debug:
-		for split in dataset.keys():
-			dataset[split] = dataset[split].select(range(len(dataset[split]) // 100))
+		for split in train_dataset.keys():
+			train_dataset[split] = train_dataset[split].select(range(len(train_dataset[split]) // 100))
+			test_dataset[split] = test_dataset[split].select(range(len(test_dataset[split]) // 100))
+		# for split in dataset.keys():
+		# 	dataset[split] = dataset[split].select(range(len(dataset[split]) // 100))
 
 	# The following copy of string is necesssary to avoid the Pickle warnings.
-	keylabel = args.key_label[:]
 	def preprocess_function(examples):
-		tokenized = tokenizer(examples["sentence"], truncation=True)
-		tokenized["label"] = [[x[k]+2 if k == "sentiment" else x[k] for k in tasknames] for x in examples[keylabel]]
-		return tokenized
-	tokenized_dataset = dataset.map(preprocess_function, batched=True)
-	#print(dataset["train"][-3:])
-	#print(tokenized_dataset["train"][-3:])
+		return tokenizer(examples["text"], truncation=True, max_length=512)
+	tokenized_train_dataset = train_dataset.map(preprocess_function, batched=True)
+	tokenized_test_dataset = test_dataset.map(preprocess_function, batched=True)
+	# tokenized_dataset = dataset.map(preprocess_function, batched=True)
 	data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
 	def compute_metrics(eval_pred):
@@ -188,9 +249,17 @@ def main(args):
 		for i,taskname in enumerate(tasknames):
 			_predictions = np.argmax(predictions[:,i], axis=1)
 			_labels = labels[:,i]
+			cm = confusion_matrix(_labels, _predictions, labels=[0, 1])
+			tn, fp, fn, tp = cm.ravel()
 			metrics[taskname] = {
 				"accuracy": accuracy_score(_labels, _predictions),
-				"mse": mean_squared_error(_labels, _predictions)
+				"precision": precision_score(_labels, _predictions, zero_division=0),
+				"recall": recall_score(_labels, _predictions, zero_division=0),
+				"f1": f1_score(_labels, _predictions, zero_division=0),
+				"TN": int(tn),
+				"FP": int(fp),
+				"FN": int(fn),
+				"TP": int(tp),
 			}
 		return metrics
 
@@ -217,16 +286,20 @@ def main(args):
 	trainer = Trainer(
 		model=model,
 		args=args.training_args(),
-		train_dataset=tokenized_dataset["train"],
-		eval_dataset=tokenized_dataset["test"],
+		train_dataset=tokenized_train_dataset,
+		eval_dataset=tokenized_test_dataset,
+		# train_dataset=tokenized_dataset["train"],
+		# eval_dataset=tokenized_dataset["test"],
 		processing_class=tokenizer,
 		data_collator=data_collator,
 		compute_metrics=compute_metrics,
 	)
 
 	train_result = trainer.train()
+	metrics = trainer.evaluate()
+	args.log(metrics, tasknames)
 	trainer.save_metrics("train", train_result.metrics)
-	trainer.save_metrics("eval", trainer.evaluate())
+	trainer.save_metrics("eval", metrics)
 	trainer.save_model(args.output_dir)
 	tokenizer.save_pretrained(args.output_dir)
 

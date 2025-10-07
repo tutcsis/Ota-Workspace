@@ -22,13 +22,9 @@ from collections import Counter
 from tqdm import tqdm
 
 class Args(Tap):
-	yes_dataset_path: str = "data/toxicity_ver2_allyesdata.jsonl"
-	allno_data_path: str = "data/toxicity_ver2_allnodata.jsonl"
-	
 	train_path: str = "data/llmjp_toxicity_dataset/train_dataset.jsonl"
 	test_path: str = "data/llmjp_toxicity_dataset/test_dataset.jsonl"
 
-	corpus_path: str = "data/CC-MAIN-2023-23/CC-MAIN-20230527223515-20230528013515/00000-ja-sentence.txt"
 	num_labels: int = 2
 	max_length: int = 1024
 
@@ -66,8 +62,8 @@ class Args(Tap):
 		log_path = Path( self.output_dir, "parameters.txt" )
 		self.log_file = log_path.open( mode='w', buffering=1 )
 		print( json.dumps({
-			"yes_dataset_path": self.yes_dataset_path,
-			"no_dataset_path": self.allno_data_path,
+			"train_path": self.train_path,
+			"test_path": self.test_path,
 			"model_name": self.model_name 
 		}), file=self.log_file )
 

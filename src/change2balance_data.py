@@ -7,11 +7,11 @@ class Args(Tap):
   dataset_path: str = "data/llmjp_toxicity_dataset/toxicity_dataset_ver2.jsonl"
   columns = ["obscene", "discriminatory", "violent", "illegal", "personal", "corporate", "others"]
   base = ["id", "text", "label"]
-  yes_samples: int = 4
+  yes_samples: int = 16
   yes_dataset_path: str = "data/llmjp_toxicity_dataset/yes_dataset.jsonl"
   no_dataset_path: str = "data/llmjp_toxicity_dataset/no_dataset.jsonl"
-  train_path: str = "data/llmjp_toxicity_dataset/train_dataset.jsonl"
-  test_path: str = "data/llmjp_toxicity_dataset/test_dataset.jsonl"
+  train_path: str = f"data/llmjp_toxicity_dataset/train_len{yes_samples}_dataset.jsonl"
+  test_path: str = f"data/llmjp_toxicity_dataset/test_len{yes_samples}_dataset.jsonl"
 
 def make_yes_no_datasets(args):
   dataset = load_dataset("json", data_files=args.dataset_path, split="train")
