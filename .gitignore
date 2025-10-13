@@ -2,6 +2,8 @@ data
 outputs
 log
 models
+imgs
+tables
 
 .venv
 uv.lock

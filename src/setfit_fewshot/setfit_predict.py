@@ -17,10 +17,10 @@ from typing import Literal
 from collections import Counter
 
 class Args(Tap):
-	dataset_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.json"
-	output_path: str = "data/twitter_stream/toxic_label_ja/2020-01/2020-01-01-00.jsonl"
-	# dataset_path: str = ""
-	# output_path: str = ""
+	# dataset_path: str = "data/twitter_stream/text-archive_ja/sampling/2011-09.jsonl"
+	# output_path: str = "data/twitter_stream/toxic-archive_ja/sampling/2011-09.jsonl"
+	dataset_path: str = ""
+	output_path: str = ""
 
 	num_labels: int = 2
 	max_length: int = 1024
@@ -71,10 +71,17 @@ def main(args):
 		example["text"] = example["text"][:args.max_length]
 
 	with open(args.dataset_path) as f:
-		temp_dict = json.load(f)
+		dict_list = [json.loads(line) for line in f]
+	
+	# dataset = Dataset.from_dict({
+	# 	"tweet_id": list(int(k) for k in sampled_dict.keys()),
+	# 	"text": list(sampled_dict.values())
+	# })
 	dataset = Dataset.from_dict({
-		"tweet_id": list(int(k) for k in temp_dict.keys()),
-		"text": list(temp_dict.values())
+		"tweet_id": [item["tweet_id"] for item in dict_list],
+		"text": [item["text"] for item in dict_list],
+		"time": [item["time"] for item in dict_list],
+		"month": [item["month"] for item in dict_list]
 	})
 	print(dataset)
 	dataset = dataset.map(truncation_text)
@@ -110,7 +117,7 @@ def main(args):
     {key: row[key] for key in dataset.features.keys()}
     for row in dataset
 	]
-	print(dataset_list[:3])
+	# print(dataset_list[:3])
 
 	with open(args.output_path, "w", encoding="utf-8") as outf:
 		for item in dataset_list:

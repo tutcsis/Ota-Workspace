@@ -3,9 +3,11 @@ import random
 from tap import Tap
 
 class Args(Tap):
-  sample_len: int = 10000
-  data_path: str = "data/twitter_stream/sample_ja/2020-01/2020-01-01-00.txt"
-  out_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.json"
+  sample_len: int = 1000
+  out_path: str = ""
+  data_path: str = ""
+  # data_path: str = "data/twitter_stream/sample_ja/2020-01/2020-01-01-00.txt"
+  # out_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.json"
   # out_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.txt"
 
 def count_lines(path):
@@ -17,8 +19,10 @@ def count_lines(path):
 
 def main(args):
   # generate random value between 0 and tweet_len
+  print("data_path: ", args.data_path)
+  print("out_path: ", args.out_path)
   tweet_len = count_lines(args.data_path)
-  rand_idxs = random.sample(range(tweet_len), args.sample_len)
+  rand_idxs = random.sample(range(tweet_len), min(args.sample_len, tweet_len))
   tweet_dict = {}
 
   with open(args.data_path, "r") as f:
