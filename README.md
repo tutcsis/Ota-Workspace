@@ -1,6 +1,9 @@
 # Ota-Workspace
 とりあえず、実行したコードや試したいデータの置き場。あとで別のリポジトリに移動する
 
+## twitter-stream
+[twitter stream の README](src/twitter_stream/README.md)
+
 ## llmjp-toxicity-dataset v2 をできるだけ均衡データに近づける
 - 使用するデータセットは各ラベルについて全体に対する有害なデータの割合がとても少ない(不均衡データ)。
 - 目的: そこで、有害でないデータをランダムで選択して削ったデータセットを用意する

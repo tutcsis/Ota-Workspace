@@ -4,9 +4,9 @@ from tap import Tap
 
 class Args(Tap):
   sample_len: int = 1000
-  out_path: str = ""
   data_path: str = ""
   # data_path: str = "data/twitter_stream/sample_ja/2020-01/2020-01-01-00.txt"
+  out_path: str = ""
   # out_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.json"
   # out_path: str = "data/twitter_stream/text_ja/2020-01/2020-01-01-00.txt"
 

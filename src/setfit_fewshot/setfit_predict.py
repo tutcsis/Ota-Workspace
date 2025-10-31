@@ -32,6 +32,8 @@ class Args(Tap):
 	datasplit_rate: float = 0.3
 	datasplit_seed: int = 42
 
+	batch_size: str = 60000
+
 	sampling_strategy: Literal["oversampling", "undersampling", "unique"] = "oversampling"
 	target_strategy: Literal["one-vs-rest", "multi-output", "classifier-chain"] = "multi-output"
 
@@ -79,6 +81,8 @@ def main(args):
 	# })
 	dataset = Dataset.from_dict({
 		"tweet_id": [item["tweet_id"] for item in dict_list],
+		"user_id": [item["user_id"] for item in dict_list],
+		"screen_name": [item["screen_name"] for item in dict_list],
 		"text": [item["text"] for item in dict_list],
 		"time": [item["time"] for item in dict_list],
 		"month": [item["month"] for item in dict_list]
@@ -96,12 +100,20 @@ def main(args):
 		multi_target_strategy=args.target_strategy,
 		device=args.device
 	)
-	results = model.predict(dataset["text"]).numpy()
+
+	results = []
+	for i in range(0, dataset.num_rows, args.batch_size):
+		batch = dataset.select(range(i, min(i + args.batch_size, dataset.num_rows)))
+		batch_results = model.predict(batch["text"]).numpy()
+		results.append(batch_results)
+	results = np.vstack(results)
+
+	# results = model.predict(dataset["text"]).numpy()
 
 	with open(f"{args.trained_model_path}/categories.txt") as f2:
 		categories = [s.strip() for s in f2.readline().split(',')]
 		print('categories: ', categories)
-  
+	
 	# results = []
 	# with open(args.output_path) as f:
 	# 	for line in f:
@@ -114,8 +126,8 @@ def main(args):
 		dataset = dataset.add_column(category, results[:,i].tolist())
 	print(dataset)
 	dataset_list = [
-    {key: row[key] for key in dataset.features.keys()}
-    for row in dataset
+		{key: row[key] for key in dataset.features.keys()}
+		for row in dataset
 	]
 	# print(dataset_list[:3])
 
