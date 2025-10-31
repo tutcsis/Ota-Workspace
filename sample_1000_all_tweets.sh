@@ -26,7 +26,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 source .venv/bin/activate
 
 INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/"
-OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/1000-sampling/"
+OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/1000-sampling-user_add/"
 
 months=($(ls $INPUT_PATH))
 for month in "${months[@]}"; do

@@ -34,6 +34,8 @@ def main(args):
 					samples.append({
 						"tweet_id": tweet_id,
 						"text": repr(json_data["text"])[1:-1],
+						"user_id": json_data["user"]["id"],
+						"screen_name": json_data["user"]["screen_name"],
 						"time": file.split('.txt')[0],
 						"month": args.month
 					})
