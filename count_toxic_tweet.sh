@@ -1,5 +1,5 @@
-DATA_PATH="data/twitter_stream/toxic-archive_ja/sampling/"
-OUTPUT_FILE="tweet_toxic_count.csv"
+DATA_PATH="data/twitter_stream/1000-toxic-sampling-user_add/"
+OUTPUT_FILE="tables/1000tweet_toxic_count.csv"
 MONTHS_FILE=($(ls $DATA_PATH))
 categories=("personal" "others" "illegal" "corporate" "violent" "discriminatory" "obscene")
 
