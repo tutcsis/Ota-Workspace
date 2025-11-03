@@ -65,3 +65,8 @@
   ..
   2020-12,100,100,100,100,100,500
   ```
+
+5. 4の表を積み上げ式のグラフにする
+  - toxic・groupごとの有害投稿数：``src/twitter_stream/tweets_group_analysis/imgs/obscene.png``など
+    - 4で作った、csvファイルをdataframeとして読み込む(toxicごと)
+    - それぞれの月を割合で載せた方が良さそう
