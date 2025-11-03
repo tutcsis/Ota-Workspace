@@ -5,6 +5,9 @@
 
 cd ${PBS_O_WORKDIR}
 
+export TZ=Asia/Tokyo
+echo "Start time: $(date '+%Y-%m-%d %H:%M:%S')"
+
 TORCH_HOME=/work/${LOGNAME}/.cache/torch
 TRANSFORMERS_CACHE=/work/${LOGNAME}/.cache/transformers
 HF_HOME=/work/${LOGNAME}/.cache/huggingface
@@ -24,5 +27,7 @@ export TORCH_USE_CUDA_DSA=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
-time uv run python src/twitter_stream/make_toxic_user_list.py
+time uv run python src/twitter_stream/count_tweets_by_twlength.py
 mv "./log/${PBS_JOBID}.OU" "./log/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
+
+echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
