@@ -9,4 +9,4 @@ GROUPED_MONTHLY_COUNTS_PATH = "/work/s245302/Ota-Workspace/src/twitter_stream/tw
 
 TOXIC_LABEL = ["obscene", "discriminatory", "violent"]
 USE_YEARS = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
-
+GROUP = [0, 1, 2, 3, 4]
