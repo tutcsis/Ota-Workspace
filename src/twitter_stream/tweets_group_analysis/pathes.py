@@ -7,6 +7,7 @@ GROUPED_USER_TABLE = "/work/s245302/Ota-Workspace/src/twitter_stream/tweets_grou
 GROUPED_TOXIC_COUNTS_PATH = "/work/s245302/Ota-Workspace/src/twitter_stream/tweets_group_analysis/tables/grouped_toxic_users/"
 GROUPED_MONTHLY_COUNTS_PATH = "/work/s245302/Ota-Workspace/src/twitter_stream/tweets_group_analysis/tables/grouped_monthly_counts/"
 GROUPED_COUNTS_GRAPH_PATH = "/work/s245302/Ota-Workspace/src/twitter_stream/tweets_group_analysis/imgs/"
+TOXIC_USER_LIST = "/work/s245302/Ota-Workspace/data/twitter_stream/toxic_user_list.txt"
 
 TOXIC_LABEL = ["obscene", "discriminatory", "violent"]
 USE_YEARS = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
