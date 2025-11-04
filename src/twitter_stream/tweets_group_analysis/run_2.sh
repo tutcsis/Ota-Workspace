@@ -27,6 +27,7 @@ export TORCH_USE_CUDA_DSA=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source /work/s245302/Ota-Workspace/.venv/bin/activate
-time uv run python 2_group_toxic_user.py
+# time uv run python 2_group_toxic_user.py
+time uv run python 2_1.py
 
 echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
