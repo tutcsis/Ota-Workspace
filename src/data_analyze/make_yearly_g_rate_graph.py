@@ -48,9 +48,9 @@ def main(args):
 	print(f"all twlen_graph: {args.all_g_twlen_graph_path}")
 	df = pd.read_csv(args.all_g_twlen_table_path, index_col=0, dtype=np.int64)
 	print(f"columns: {df.columns}")
-	df['all'] = 0
-	for group in args.groups:
-		df['all'] = df['all'] + df[str(group)]
+	# df['all'] = 0
+	# for group in args.groups:
+	# 	df['all'] = df['all'] + df[str(group)]
 
 	for group in args.groups:
 		df[str(group)] = df[str(group)]/df['all']*100

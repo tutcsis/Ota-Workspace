@@ -118,10 +118,19 @@ def main(args):
 
 	g_twlen_yearly_df = pd.DataFrame(0, columns=args.groups, index=args.years, dtype=np.int32)
 	for year in args.years:
-		year_counts = Counter(group_user_df[year])
-		for group in args.groups:
-			g_twlen_yearly_df.at[year, group] = year_counts[int(group)]
+		twlen_list = list(tw_len_yearly_df[year])
+		g_user_list = list(group_user_df[year])
+		g_counts = [0]*len(args.groups)
+		for i, group in enumerate(g_user_list):
+			if group == -1:
+				continue
+			g_counts[int(group)] += int(twlen_list[i])
+		g_twlen_yearly_df.loc[year] = g_counts
+	g_twlen_yearly_df['all'] = g_twlen_yearly_df.sum(axis=1)
 	print(f"g_twlen_yearly_df:\n{g_twlen_yearly_df}")
+		# year_counts = Counter(group_user_df[year])
+		# for group in args.groups:
+		# 	g_twlen_yearly_df.at[year, group] = year_counts[int(group)]
 
 	# save group user table
 	g_twlen_yearly_df.to_csv(args.sampled_g_twlen_yearly)

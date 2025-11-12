@@ -27,6 +27,7 @@ export TORCH_USE_CUDA_DSA=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
+# time uv run python src/twitter_stream/count_twlen_yearly.py
 time uv run python src/data_analyze/make_yearly_g_rate_graph.py
 mv "./log/${PBS_JOBID}.OU" "./log/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
 
