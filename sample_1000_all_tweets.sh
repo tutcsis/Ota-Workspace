@@ -1,7 +1,7 @@
 #PBS -q gLrchq
 #PBS -l select=1:ncpus=4:mem=4G:ngpus=1
 #PBS -v SINGULARITY_IMAGE=imc.tut.ac.jp/transformers-pytorch-cuda118:4.46.3
-#PBS -k doe -j oe -o ./log/sample_1000_ja_tweets
+#PBS -k doe -j oe -o ./log/sample_1000_media_ja_tweets
 
 cd ${PBS_O_WORKDIR}
 
@@ -26,7 +26,8 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 source .venv/bin/activate
 
 INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/"
-OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/1000-sampling-user_add/"
+OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/1000-sampling-media_add/"
+# OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/1000-sampling-user_add/"
 
 months=($(ls $INPUT_PATH))
 for month in "${months[@]}"; do
@@ -38,4 +39,4 @@ for month in "${months[@]}"; do
   # break
 done
 
-mv "./log/sample_1000_ja_tweets/${PBS_JOBID}.OU" "./log/sample_1000_ja_tweets/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
+mv "./log/sample_1000_media_ja_tweets/${PBS_JOBID}.OU" "./log/sample_1000_media_ja_tweets/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
