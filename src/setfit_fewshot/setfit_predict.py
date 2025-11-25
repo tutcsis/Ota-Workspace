@@ -84,6 +84,8 @@ def main(args):
 		"user_id": [item["user_id"] for item in dict_list],
 		"screen_name": [item["screen_name"] for item in dict_list],
 		"text": [item["text"] for item in dict_list],
+		"urls": [item["urls"] for item in dict_list],
+		"media": [item["media"] for item in dict_list],
 		"time": [item["time"] for item in dict_list],
 		"month": [item["month"] for item in dict_list]
 	})

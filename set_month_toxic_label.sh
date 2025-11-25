@@ -30,4 +30,4 @@ echo "INPUT_FILE=${INPUT_FILE}, OUTPUT_FILE=${OUTPUT_FILE}"
 time uv run python src/setfit_fewshot/setfit_predict.py \
   --dataset_path ${INPUT_FILE} \
   --output_path ${OUTPUT_FILE}
-mv "./log/set_1000toxic_label/${PBS_JOBID}.OU" "./log/set_1000toxic_label/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
+mv "./log/set_1000toxic_label_media/${PBS_JOBID}.OU" "./log/set_1000toxic_label_media/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
