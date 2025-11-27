@@ -9,6 +9,7 @@ SAMPLED_ALL_JA_TW_TEXT_PATH = "data/twitter_stream/text-archive_ja/sampling/"
 TWLENGTH_TABLE_PATH = "/work/s245302/Ota-Workspace/tables/twlength_tweet_count/"
 SAMPLED_G_TWLEN_TABLE_PATH = "/work/s245302/Ota-Workspace/tables/sampled_g_twlen_yearly.csv"
 SAMPLED_ALL_TWLEN_TABLE_PATH = "/work/s245302/Ota-Workspace/tables/sampled_all_tw_counts_yearly.csv"
+ALL_MEDIA_TABLE = "/work/s245302/Ota-Workspace/tables/all_media_counts_yearly.csv"
 
 # toxic data
 G_USERS_TABLE_PATH = "/work/s245302/Ota-Workspace/tables/grouped_users/"
@@ -28,6 +29,7 @@ G_YEARLY_TWLEN_GRAPH_PATH = "/work/s245302/Ota-Workspace/imgs/g_twcount_rate_yea
 ALL_G_YEARLY_TWLEN_GRAPH_PATH = "/work/s245302/Ota-Workspace/imgs/all_g_twcount_rate_yearly.png"
 TOXIC_TWLEN_COUNT_GRAPH_PATH = "/work/s245302/Ota-Workspace/imgs/new_twlen_tweet_count"
 TOXIC_MEDIA_GRAPH_PATH = "/work/s245302/Ota-Workspace/imgs/toxic_media_rate/"
+ALL_MEDIA_GRAPH_PATH = "/work/s245302/Ota-Workspace/imgs/all_media_rate.png"
 
 TOXIC_LABEL = ["obscene", "discriminatory", "violent"]
 USE_YEARS = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
