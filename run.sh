@@ -28,7 +28,7 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
 # time uv run python src/twitter_stream/count_twlen_yearly.py
-time uv run python src/twitter_stream/count_toxic_media.py
+time bash count_tweetid.sh
 mv "./log/${PBS_JOBID}.OU" "./log/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
 
 echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"

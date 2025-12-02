@@ -3,14 +3,16 @@ import matplotlib.pyplot as plt
 from tap import Tap
 
 class Args(Tap):
-	table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
+	table_path: str = "tables/ja_tweet_counts.csv"
+	# table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
 	# table_path: str = "tables/1000tweet_toxic_count.csv"
 	# table_path: str = "tables/tweet_toxic_count.csv"
 	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic.png"
 	# graph_path: str = "imgs/1000tweets_toxic_rate/"
 	# graph_path: str = "imgs/year_1000tweets_3toxic.png"
 	# graph_path: str = "imgs/year1000tweets_2012-2020_3toxic.png"
-	graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
+	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
+	graph_path: str = "imgs/2012-2020_ja_twlen.png"
 
 	user_years: list = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
 
@@ -21,6 +23,7 @@ class Args(Tap):
 	graph_y1label: str = "Category Tweet Count"
 	graph_y2label: str = "All Tweets Count"
 	rate: bool = True
+	mode: str = "all" # all, toxic
 
 
 def make_tweet_graph(args, df, year=None):
@@ -31,19 +34,22 @@ def make_tweet_graph(args, df, year=None):
 		df = df[df.index.str.startswith(year)]
 
 	# スパム投稿を除外
-
-	for toxic in args.graph_labels:
-		df[toxic] = df[toxic] / df['alltweets'] * 100
-		df[toxic] = df[toxic].apply(lambda x: x if x <= 3 else 3)
-	print(df.head()[args.graph_labels + ['alltweets']])
-	# return
-
+	if args.mode == 'toxic':
+		for toxic in args.graph_labels:
+			df[toxic] = df[toxic] / df['alltweets'] * 100
+			df[toxic] = df[toxic].apply(lambda x: x if x <= 3 else 3)
+		print(df.head()[args.graph_labels + ['alltweets']])
+		# return
+	
 
 	if args.rate:
 		print("Plotting rate graph[%]")
 		plt.figure()
-		for toxic in args.graph_labels:
-			plt.plot(df.index, df[toxic], label=toxic, marker='o')
+		if args.mode == 'toxic':
+			for toxic in args.graph_labels:
+				plt.plot(df.index, df[toxic], label=toxic, marker='o')
+		elif args.mode == 'all':
+			plt.plot(df.index, df['alltweets'], label='alltweets', marker='o', color='black')
 		plt.xticks(
 			range(0, 12*len(args.user_years)+1, 12),
 			args.user_years + [""]
@@ -52,7 +58,10 @@ def make_tweet_graph(args, df, year=None):
 		plt.legend()
 		plt.title(f"{args.graph_title}")
 		plt.xlabel(args.graph_xlabel)
-		plt.ylabel(f"{args.graph_y1label}[%]")
+		if args.mode == 'toxic':
+			plt.ylabel(f"{args.graph_y1label}[%]")
+		elif args.mode == 'all':
+			plt.ylabel(f"{args.graph_y2label}")
 		plt.tight_layout()
 		plt.savefig(args.graph_path)
 		plt.close()
