@@ -9,6 +9,7 @@ import utils
 import os
 import json
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import pandas as pd
 from tap import Tap
 from tqdm import tqdm
@@ -23,14 +24,19 @@ class Args(Tap):
 	groups: list = GROUP
 
 	# graph settings
-	graph_title: str = "twlength Toxic Tweet Count"
-	graph_xlabel: str = "month"
-	graph_ylabel: str = "tweets"
+	graph_title: str = "投稿の文字数によるグループ分け"
+	graph_xlabel: str = "投稿した年月"
+	graph_ylabel: str = "グループ 1 の割合"
 	colors = {
 		'1': 'royalblue',
 		'2': 'orangered',
 		'all': 'sienna'
 	}
+
+def draw_bar(args, start_year, start_month, end_year, end_month):
+	start_num = (start_year - 2012) * 12 + (start_month - 1)
+	end_num = (end_year - 2012) * 12 + (end_month - 1)
+	plt.axvspan(start_num, end_num, color='lightgreen', alpha=0.5)
 
 def main(args):
 	for toxic in args.toxic_label:
@@ -52,18 +58,27 @@ def main(args):
 		print(df)
 		
 		# plotting
-		fig, ax = plt.subplots(figsize=(12, 6))
-		ax.plot(df.index, df['1'], marker='o', color=args.colors['1'], label='group 1')
-		ax.set_yticks(range(0, 101, 10))
-		ax.grid(True, axis='both', linestyle='--')
-		year_labels = [f"{year}-01" for year in args.years]
-		ax.set_xticks([label for label in df.index if label in year_labels])
-		ax.set_xticklabels(args.years)
+		plt.figure()
+		plt.plot(df.index, df['1'], marker='o', color=args.colors['1'], label='group 1')
+		# ax.grid(True, axis='both', linestyle='--')
 
-		ax.set_title(f"{args.graph_title} Rate (%) ({toxic})")
-		ax.set_xlabel(args.graph_xlabel)
-		ax.set_ylabel(args.graph_ylabel)
-		ax.legend()
+		# 投稿数が異常に多い月を強調表示
+		# 2012-01, 2013-03
+		draw_bar(args, 2012, 1, 2013, 3)
+
+		# 2019-5, 2020-12
+		draw_bar(args, 2019, 5, 2020, 12)
+
+		plt.title(f"{args.graph_title} ({toxic})")
+		plt.xlabel(args.graph_xlabel)
+		plt.ylabel(args.graph_ylabel)
+		plt.legend()
+		plt.xticks(
+			range(0, 12*len(args.years)+1, 12),
+			args.years + [""],
+			rotation=0
+		)
+		plt.grid()
 
 		# plt.figure()
 		# df.plot.bar(stacked=True)

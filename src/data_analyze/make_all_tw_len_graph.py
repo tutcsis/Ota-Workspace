@@ -8,6 +8,7 @@ import utils
 import os
 import json
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import pandas as pd
 from tap import Tap
 from tqdm import tqdm
@@ -19,9 +20,9 @@ class Args(Tap):
 	graph_path: str = ALL_TWLEN_GRAPH_PATH
 	years: list = USE_YEARS	
 
-	graph_title: str = "Tweet Length Distribution"
-	graph_xlabel: str = "Tweet Length (characters)"
-	graph_ylabel: str = "Count"
+	graph_title: str = "ツイートの文字数の分布"
+	graph_xlabel: str = "文字数"
+	graph_ylabel: str = "出現回数"
 	
 
 def make_tw_counts_table(args):
@@ -69,7 +70,7 @@ def main(args):
 	plt.title(args.graph_title)
 	plt.xlabel(args.graph_xlabel)
 	plt.ylabel(args.graph_ylabel)
-	plt.legend()
+	# plt.legend()
 	plt.grid(True)
 	plt.tight_layout()
 	plt.savefig(args.graph_path)

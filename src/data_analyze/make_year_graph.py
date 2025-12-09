@@ -1,30 +1,38 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 from tap import Tap
 
 class Args(Tap):
-	table_path: str = "tables/ja_tweet_counts.csv"
-	# table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
+	# table_path: str = "tables/ja_tweet_counts.csv"
+	table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
 	# table_path: str = "tables/1000tweet_toxic_count.csv"
 	# table_path: str = "tables/tweet_toxic_count.csv"
 	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic.png"
 	# graph_path: str = "imgs/1000tweets_toxic_rate/"
 	# graph_path: str = "imgs/year_1000tweets_3toxic.png"
 	# graph_path: str = "imgs/year1000tweets_2012-2020_3toxic.png"
-	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
-	graph_path: str = "imgs/2012-2020_ja_twlen.png"
+	graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
+	# graph_path: str = "imgs/2012-2020_ja_twlen.png"
 
 	user_years: list = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
 
 	graph_labels: list = ["obscene", "discriminatory", "violent"]
-	graph_title: str = "Toxic Tweet Count"
+	graph_title: str = "全体の投稿数"
+	# graph_title: str = "有害投稿数"
 	# graph_xlabel: str = "month"
-	graph_xlabel: str = "year"
-	graph_y1label: str = "Category Tweet Count"
-	graph_y2label: str = "All Tweets Count"
+	graph_xlabel: str = "投稿した年月"
+	graph_y1label: str = "有害投稿の割合"
+	graph_y2label: str = "投稿数"
 	rate: bool = True
-	mode: str = "all" # all, toxic
+	# mode: str = "all" # all, toxic
+	mode: str = "toxic" # all, toxic
+	toxic_limit: int = 5
 
+def draw_bar(args, start_year, start_month, end_year, end_month):
+	start_num = (start_year - 2012) * 12 + (start_month - 1)
+	end_num = (end_year - 2012) * 12 + (end_month - 1)
+	plt.axvspan(start_num, end_num, color='lightgreen', alpha=0.5)
 
 def make_tweet_graph(args, df, year=None):
 	if year == 'avg':
@@ -36,9 +44,10 @@ def make_tweet_graph(args, df, year=None):
 	# スパム投稿を除外
 	if args.mode == 'toxic':
 		for toxic in args.graph_labels:
-			df[toxic] = df[toxic] / df['alltweets'] * 100
-			df[toxic] = df[toxic].apply(lambda x: x if x <= 3 else 3)
-		print(df.head()[args.graph_labels + ['alltweets']])
+			# 欠損値は 0 で割らないようにする
+			df.loc[df['total'] != 0, toxic] = df[toxic] / df['total'] * 100
+			df[toxic] = df[toxic].apply(lambda x: x if x <= args.toxic_limit else args.toxic_limit)
+		print(df.head()[args.graph_labels + ['total']])
 		# return
 	
 
@@ -54,6 +63,14 @@ def make_tweet_graph(args, df, year=None):
 			range(0, 12*len(args.user_years)+1, 12),
 			args.user_years + [""]
 		)
+
+		# 投稿数が異常に多い月を強調表示
+		# 2012-01, 2013-03
+		draw_bar(args, 2012, 1, 2013, 3)
+
+		# 2019-5, 2020-12
+		draw_bar(args, 2019, 5, 2020, 12)
+
 		plt.grid(True)
 		plt.legend()
 		plt.title(f"{args.graph_title}")

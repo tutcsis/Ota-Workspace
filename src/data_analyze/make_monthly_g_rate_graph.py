@@ -9,6 +9,7 @@ import utils
 import os
 import json
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import numpy as np
 import pandas as pd
 from tap import Tap
@@ -23,9 +24,9 @@ class Args(Tap):
 	groups: list = GROUP
 
 	# graph settings
-	graph_title: str = "Grouped Toxic Tweet Count"
-	graph_xlabel: str = "month"
-	graph_ylabel: str = "tweets"
+	graph_title: str = "ユーザの利用年数によるグループ分け"
+	graph_xlabel: str = "投稿した年月"
+	graph_ylabel: str = "グループごとの割合[%]"
 	colors = {
 		'0': 'darkorchid',
 		'1': 'royalblue',
@@ -33,6 +34,11 @@ class Args(Tap):
 		'3': 'forestgreen',
 		'4': 'crimson',
 	}
+
+def draw_bar(args, start_year, start_month, end_year, end_month):
+	start_num = (start_year - 2012) * 12 + (start_month - 1)
+	end_num = (end_year - 2012) * 12 + (end_month - 1)
+	plt.axvspan(start_num, end_num, color='lightgreen', alpha=0.5)
 
 def main(args):
 	for toxic in args.toxic_label + ['all']:
@@ -58,8 +64,19 @@ def main(args):
 		df.plot.bar(stacked=True)
 		plt.xticks(
 			range(0, 12*len(args.years)+1, 12),
-			args.years + [""]
+			args.years + [""],
+			rotation=0
 		)
+
+
+		# 投稿数が異常に多い月を強調表示
+		# 2012-01, 2013-03
+		draw_bar(args, 2012, 1, 2013, 3)
+
+		# 2019-5, 2020-12
+		draw_bar(args, 2019, 5, 2020, 12)
+
+		plt.legend(loc='lower right')
 		plt.title(f"{args.graph_title} ({toxic})")
 		plt.xlabel(args.graph_xlabel)
 		plt.ylabel(args.graph_ylabel)
