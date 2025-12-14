@@ -35,33 +35,42 @@ def main(args):
     twlen_df_dict[toxic] = pd.DataFrame(
       columns=args.table_columns
     )
+  twlen_df_dict['all']  = pd.DataFrame(
+    columns=args.table_columns
+  )
 
   # set group by twlen
   # group1: 10 <= twlen <= 80
   # group2: 81 <= twlen <= Infinity
-  for file in utils.get_file_names(args.data_path):
+  for file in tqdm(utils.get_file_names(args.data_path)):
     data_file = os.path.join(args.data_path, file)
     month = file.replace('.jsonl', '')
     print(f"data_file: {data_file}")
     for toxic in args.toxic_label:
       twlen_df_dict[toxic].loc[month] = 0
+    twlen_df_dict['all'].loc[month] = 0
 
     with open(data_file, 'r') as f:
       for line in f:
         tw_json = json.loads(line)
         tw_length = len(tw_json['text'])
-        for toxic in args.toxic_label:
-          curr_len_label = labeling_tw_len(tw_length)
-          if curr_len_label and tw_json[toxic] == 1:
-            twlen_df_dict[toxic].at[month, curr_len_label] += 1
+        curr_len_label = labeling_tw_len(tw_length)
+        if curr_len_label:
+          twlen_df_dict['all'].at[month, curr_len_label] += 1
+        # for toxic in args.toxic_label:
+        #   if curr_len_label and tw_json[toxic] == 1:
+        #     twlen_df_dict[toxic].at[month, curr_len_label] += 1
 
-    for toxic in args.toxic_label:
-      twlen_df_dict[toxic].at[month, 'all'] = twlen_df_dict[toxic].loc[month].sum()
+    twlen_df_dict['all'].at[month, 'all'] = twlen_df_dict['all'].loc[month].sum()
+    # for toxic in args.toxic_label:
+    #   twlen_df_dict[toxic].at[month, 'all'] = twlen_df_dict[toxic].loc[month].sum()
     print(f"{month} finished!!")
 
-  for toxic in args.toxic_label:
-    print(f"{toxic} df: {twlen_df_dict[toxic]}")
-    twlen_df_dict[toxic].to_csv(f"{args.table_path}{toxic}.csv")
+  print(f"all df: {twlen_df_dict['all']}")
+  twlen_df_dict['all'].to_csv(f"{args.table_path}all.csv")
+  # for toxic in args.toxic_label:
+  #   print(f"{toxic} df: {twlen_df_dict[toxic]}")
+  #   twlen_df_dict[toxic].to_csv(f"{args.table_path}{toxic}.csv")
 
 if __name__ == "__main__":
   args = Args().parse_args()

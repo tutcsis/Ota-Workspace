@@ -39,7 +39,7 @@ def draw_bar(args, start_year, start_month, end_year, end_month):
 	plt.axvspan(start_num, end_num, color='lightgreen', alpha=0.5)
 
 def main(args):
-	for toxic in args.toxic_label:
+	for toxic in args.toxic_label + ['all']:
 		table_file = os.path.join(args.table_path, f"{toxic}.csv")
 		graph_file = os.path.join(args.graph_path, f"{toxic}.png")
 		df = pd.read_csv(table_file, index_col=0)
@@ -59,7 +59,11 @@ def main(args):
 		
 		# plotting
 		plt.figure()
-		plt.plot(df.index, df['1'], marker='o', color=args.colors['1'], label='group 1')
+		plt.plot(df.index, df['1'], marker='o', color='black', linewidth=1, markersize=5)
+		plt.fill_between(df.index, df['1'], color='blue', alpha=0.1)  # 線の下側を青色で塗りつぶし
+		plt.fill_between(df.index, df['1'], 100, color='red', alpha=0.1)  # 線の上側を赤色で塗りつぶし
+		plt.ylim(0, 100)
+		plt.yticks(range(0, 101, 10))
 		# ax.grid(True, axis='both', linestyle='--')
 
 		# 投稿数が異常に多い月を強調表示
@@ -69,10 +73,11 @@ def main(args):
 		# 2019-5, 2020-12
 		draw_bar(args, 2019, 5, 2020, 12)
 
-		plt.title(f"{args.graph_title} ({toxic})")
-		plt.xlabel(args.graph_xlabel)
-		plt.ylabel(args.graph_ylabel)
-		plt.legend()
+		# plt.title(f"{args.graph_title} ({toxic})")
+		# plt.xlabel(args.graph_xlabel)
+		# plt.ylabel(args.graph_ylabel)
+		# plt.legend()
+		# plt.legend().remove()
 		plt.xticks(
 			range(0, 12*len(args.years)+1, 12),
 			args.years + [""],

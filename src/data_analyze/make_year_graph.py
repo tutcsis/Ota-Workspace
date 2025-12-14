@@ -4,16 +4,16 @@ import japanize_matplotlib
 from tap import Tap
 
 class Args(Tap):
-	# table_path: str = "tables/ja_tweet_counts.csv"
-	table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
+	table_path: str = "tables/ja_tweet_counts.csv"
+	# table_path: str = "tables/merged_toxic_count_with_all_tweets.csv"
 	# table_path: str = "tables/1000tweet_toxic_count.csv"
 	# table_path: str = "tables/tweet_toxic_count.csv"
 	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic.png"
 	# graph_path: str = "imgs/1000tweets_toxic_rate/"
 	# graph_path: str = "imgs/year_1000tweets_3toxic.png"
 	# graph_path: str = "imgs/year1000tweets_2012-2020_3toxic.png"
-	graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
-	# graph_path: str = "imgs/2012-2020_ja_twlen.png"
+	# graph_path: str = "imgs/1000tweets_2012-2020_3toxic_rate.png"
+	graph_path: str = "imgs/2012-2020_ja_twlen.png"
 
 	user_years: list = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
 
@@ -25,8 +25,8 @@ class Args(Tap):
 	graph_y1label: str = "有害投稿の割合"
 	graph_y2label: str = "投稿数"
 	rate: bool = True
-	# mode: str = "all" # all, toxic
-	mode: str = "toxic" # all, toxic
+	mode: str = "all" # all, toxic
+	# mode: str = "toxic" # all, toxic
 	toxic_limit: int = 5
 
 def draw_bar(args, start_year, start_month, end_year, end_month):
@@ -72,13 +72,13 @@ def make_tweet_graph(args, df, year=None):
 		draw_bar(args, 2019, 5, 2020, 12)
 
 		plt.grid(True)
-		plt.legend()
-		plt.title(f"{args.graph_title}")
-		plt.xlabel(args.graph_xlabel)
-		if args.mode == 'toxic':
-			plt.ylabel(f"{args.graph_y1label}[%]")
-		elif args.mode == 'all':
-			plt.ylabel(f"{args.graph_y2label}")
+		# plt.legend()
+		# plt.title(f"{args.graph_title}")
+		# plt.xlabel(args.graph_xlabel)
+		# if args.mode == 'toxic':
+		# 	plt.ylabel(f"{args.graph_y1label}[%]")
+		# elif args.mode == 'all':
+		# 	plt.ylabel(f"{args.graph_y2label}")
 		plt.tight_layout()
 		plt.savefig(args.graph_path)
 		plt.close()

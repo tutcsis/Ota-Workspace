@@ -76,10 +76,11 @@ def main(args):
 		# 2019-5, 2020-12
 		draw_bar(args, 2019, 5, 2020, 12)
 
-		plt.legend(loc='lower right')
-		plt.title(f"{args.graph_title} ({toxic})")
-		plt.xlabel(args.graph_xlabel)
-		plt.ylabel(args.graph_ylabel)
+		plt.legend().remove()
+		# plt.legend(loc='lower right')
+		# plt.title(f"{args.graph_title} ({toxic})")
+		# plt.xlabel(args.graph_xlabel)
+		# plt.ylabel(args.graph_ylabel)
 		plt.tight_layout()
 		plt.savefig(graph_file)
 		plt.close()

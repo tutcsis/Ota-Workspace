@@ -64,10 +64,11 @@ def make_graph(args, file_path, graph_file, toxic=None):
 	draw_bar(args, 2019, 5, 2020, 12)
 
 
-	plt.title(f"{args.graph_title} ({toxic})")
-	plt.legend(bbox_to_anchor=(1, 1))
-	plt.xlabel(args.graph_xlabel)
-	plt.ylabel(args.graph_ylabel)
+	# plt.title(f"{args.graph_title} ({toxic})")
+	plt.legend().remove()
+	# plt.legend(bbox_to_anchor=(1, 1))
+	# plt.xlabel(args.graph_xlabel)
+	# plt.ylabel(args.graph_ylabel)
 	plt.xticks(
 		range(0, 12*len(args.years)+1, 12),
 		args.years + [""],

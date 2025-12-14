@@ -67,9 +67,9 @@ def main(args):
 		range(0, 141+1, 10),
 		range(0, 141+1, 10)
 	)
-	plt.title(args.graph_title)
-	plt.xlabel(args.graph_xlabel)
-	plt.ylabel(args.graph_ylabel)
+	# plt.title(args.graph_title)
+	# plt.xlabel(args.graph_xlabel)
+	# plt.ylabel(args.graph_ylabel)
 	# plt.legend()
 	plt.grid(True)
 	plt.tight_layout()
