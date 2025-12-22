@@ -1,5 +1,5 @@
 #PBS -I -q gEduq
-#PBS -l select=1:ncpus=4:mem=32G:ngpus=1
+#PBS -l select=1:ncpus=4:mem=32G:ngpus=1:vnode=xsnd01
 #PBS -v SINGULARITY_IMAGE=imc.tut.ac.jp/transformers-pytorch-cuda118:4.46.3
 
 cd ${PBS_O_WORKDIR}

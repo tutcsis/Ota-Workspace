@@ -3,6 +3,7 @@ import os
 import json
 from pathlib import Path
 from tap import Tap
+from bs4 import BeautifulSoup
 
 class Args(Tap):
 	dataset_path: str = ""
@@ -42,6 +43,9 @@ def main(args):
 					json_data = json.loads(json_str)
 					media = json_data.get(check_extended_entities(args.month), {}).get("media", [])
 					urls = json_data.get("entities", {}).get("urls", [])
+					user_machine = BeautifulSoup(json_data.get("source", ""), "html.parser").get_text()
+					if user_machine is None:
+						user_machine = ""
 					if media:
 						media_count += 1
 					if urls:
@@ -52,6 +56,7 @@ def main(args):
 						"user_id": json_data["user"]["id"],
 						"screen_name": json_data["user"]["screen_name"],
 						"media": media,
+						"user_machine": user_machine,
 						"urls": urls,
 						"time": file.split('.txt')[0],
 						"month": args.month

@@ -1,5 +1,5 @@
 #PBS -q gLrchq
-#PBS -l select=1:ncpus=4:mem=128G:ngpus=1
+#PBS -l select=1:ncpus=4:mem=32G:ngpus=1:vnode=xsnd03
 #PBS -v SINGULARITY_IMAGE=imc.tut.ac.jp/transformers-pytorch-cuda118:4.46.3
 #PBS -k doe -j oe -o ./log
 
@@ -27,7 +27,7 @@ export TORCH_USE_CUDA_DSA=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
-time uv run python src/twitter_stream/sampling_toxic_pos_neg.py
+time uv run python src/twitter_stream/count_tweet_machine.py
 # time bash count_tweetid.sh
 mv "./log/${PBS_JOBID}.OU" "./log/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
 
