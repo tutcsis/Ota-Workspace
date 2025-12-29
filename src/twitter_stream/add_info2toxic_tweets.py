@@ -13,6 +13,7 @@ from tap import Tap
 from tqdm import tqdm
 from collections import Counter
 from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 class Args(Tap):
 	# toxic_tweets: str = "/work/s245302/Ota-Workspace/data/twitter_stream/1000-toxic-sampling-user_add/"
@@ -25,6 +26,21 @@ class Args(Tap):
 	month: str = ""
 	toxic_label: list = TOXIC_LABEL
 	years: list = USE_YEARS
+	twitter_machine_dict = {
+		"Twitter for iPhone": "iphone",
+		"Twitter for iPad": "ipad",
+		"Twitter for Android": "android",
+		"Twitter for Android Tablets": "androidtablet",
+		"Twitter Web Client": "web"
+	}
+	tw_hosts: list = [
+		"twitter.com",
+		"mobile.twitter.com"
+		"about.twitter.com"
+		"www.twitter.com"
+		"dev.twitter.com"
+		"apps.twitter.com"
+	]
 
 def check_extended_entities(month):
 	curr_year, curr_month = month.split('-')
@@ -32,6 +48,14 @@ def check_extended_entities(month):
 		return "entities"	# before September 2014
 	else:
 		return "extended_entities" # after October 2014
+
+def labeling_machine(args, user_machine, host_name):
+	if host_name not in args.tw_hosts:
+		return "other"
+	for key in args.twitter_machine_dict.keys():
+		if key in user_machine:
+			return args.twitter_machine_dict[key]
+	return "other"
 
 def main(args):
 	print(f"toxic_tweets: {args.toxic_tweets}, month: {args.month}")
@@ -60,8 +84,14 @@ def main(args):
 				json_data = json.loads(json_str)
 				media = json_data.get(check_extended_entities(args.month), {}).get("media", [])
 				urls = json_data.get("entities", {}).get("urls", [])
-				user_machine = BeautifulSoup(json_data.get("source", ""), "html.parser").get_text()
+				soup = BeautifulSoup(json_data.get("source", ""), "html.parser")
+				user_machine = soup.get_text().strip()
+				href_value = soup.a['href'] if soup.a else ""
+				host_name = urlparse(href_value).hostname if href_value else ""
+				machine_label = labeling_machine(args, user_machine, host_name)
 				tweet_dict[tw_time][tweet_id]["user_machine"] = user_machine
+				tweet_dict[tw_time][tweet_id]["host_name"] = host_name
+				tweet_dict[tw_time][tweet_id]["machine_label"] = machine_label
 				tweet_dict[tw_time][tweet_id]["media"] = media
 				tweet_dict[tw_time][tweet_id]["urls"] = urls
 				added_tweet_list.append(tweet_dict[tw_time][tweet_id])
