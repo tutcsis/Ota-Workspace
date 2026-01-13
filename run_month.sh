@@ -1,12 +1,4 @@
-#PBS -q gLrchq
-#PBS -l select=1:ncpus=4:mem=32G:ngpus=1:vnode=xsnd03
-#PBS -v SINGULARITY_IMAGE=imc.tut.ac.jp/transformers-pytorch-cuda118:4.46.3
-#PBS -k doe -j oe -o ./log
-
 cd ${PBS_O_WORKDIR}
-
-export TZ=Asia/Tokyo
-echo "Start time: $(date '+%Y-%m-%d %H:%M:%S')"
 
 TORCH_HOME=/work/${LOGNAME}/.cache/torch
 TRANSFORMERS_CACHE=/work/${LOGNAME}/.cache/transformers
@@ -27,8 +19,9 @@ export TORCH_USE_CUDA_DSA=1
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
-time uv run python src/twitter_stream/check_ja_tweets.py
-# time bash count_tweetid.sh
-mv "./log/${PBS_JOBID}.OU" "./log/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
 
-echo "End time: $(date '+%Y-%m-%d %H:%M:%S')"
+echo month=${month}
+time uv run python src/twitter_stream/check_ja_tweets.py \
+  --month ${month}
+
+mv "./log/run_all/${PBS_JOBID}.OU" "./log/run_all/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
