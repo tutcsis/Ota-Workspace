@@ -1,3 +1,30 @@
+# 日本語ツイートの抽出
+- get_all_ja_tw_data.sh: 月毎のジョブを発行し get_ja_tw_data.shを呼び出す
+- get_ja_tw_data.sh: １時間ごとのツイートを保存したファイルから、“lang”:“ja”が含まれる行のみを抽出する(ざっくりとした日本語抽出)。さらに、src/twitter_stream/filter_ja_tweets.pyを実行する
+	- 入力: data/twitter_stream/sample-archive-twitterstream/
+	- 出力: data/twitter_stream/sample-archive_str_ja1/
+```
+grep '"lang":"ja"' $file > "$ja1_file"
+```
+- src/twitter_stream/filter_ja_tweets.py: jsonデータを読み込んで、langフィールドかuser.langフィールドがjaのデータを抽出(日本語抽出)
+	- 入力: data/twitter_stream/sample-archive_str_ja1/
+	- 出力: data/twitter_stream/sample-archive_str_ja2/
+```
+json_data = json.loads(json_str)
+lang = json_data.get('lang', '')
+if not lang:
+	lang = json_data.get('user', {}).get('lang', '')
+if lang == 'ja':
+	out_list.append(line)
+```
+
+# ランダムサンプリング&json整形
+- sample_1percent_ja_all.sh: 月毎のジョブを発行してsample_1percent_ja_month.shを実行
+- sample_1percent_ja_month.sh: 指定した月でsample_1percent_ja.pyを実行
+- sample_1percent_ja.py: ランダムサンプリングをして、必要なフィールドだけを抽出したjsonに整形する。
+	- 入力: data/twitter_stream/sample-archive_str_ja2/
+	- 出力: data/twitter_stream/sample_1percent_ja/
+
 
 ## コード
 - concat_csv.py: 2つのテーブルを結合して新しいテーブルにして出力
