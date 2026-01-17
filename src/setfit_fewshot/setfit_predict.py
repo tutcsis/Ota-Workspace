@@ -75,19 +75,8 @@ def main(args):
 	with open(args.dataset_path) as f:
 		dict_list = [json.loads(line) for line in f]
 	
-	# dataset = Dataset.from_dict({
-	# 	"tweet_id": list(int(k) for k in sampled_dict.keys()),
-	# 	"text": list(sampled_dict.values())
-	# })
 	dataset = Dataset.from_dict({
-		"tweet_id": [item["tweet_id"] for item in dict_list],
-		"user_id": [item["user_id"] for item in dict_list],
-		"screen_name": [item["screen_name"] for item in dict_list],
-		"text": [item["text"] for item in dict_list],
-		"urls": [item["urls"] for item in dict_list],
-		"media": [item["media"] for item in dict_list],
-		"time": [item["time"] for item in dict_list],
-		"month": [item["month"] for item in dict_list]
+		key: [item[key] for item in dict_list] for key in dict_list[0].keys()
 	})
 	print(dataset)
 	dataset = dataset.map(truncation_text)
