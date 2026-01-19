@@ -20,13 +20,15 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 source .venv/bin/activate
 
-INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/"
-OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample_1percent_ja/"
+INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sampled-ja-0_001/"
+OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sampled_ja2json-0_001/"
+# INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/"
+# OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample_0_1percent_ja/"
 
 echo "month=${month}"
-time uv run python src/twitter_stream/sample_1percent_ja.py \
-  --dataset_path ${INPUT_PATH}${month}/ \
+time uv run python src/twitter_stream/sample_ja2json.py \
+  --dataset_path ${INPUT_PATH}${month}.jsonl \
   --output_path ${OUTPUT_PATH} \
   --month ${month}
 
-mv "./log/sample_1percent_ja_all/${PBS_JOBID}.OU" "./log/sample_1percent_ja_all/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"
+mv "./log/sample_ja2json/${PBS_JOBID}.OU" "./log/sample_ja2json/${PBS_JOBNAME}.o${PBS_JOBID%.xregistry*}"

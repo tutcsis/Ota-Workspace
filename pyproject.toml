@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
   "accelerate>=1.9.0",
+  "beautifulsoup4>=4.14.3",
   "bitsandbytes>=0.46.0",
   "datasets>=3.6.0",
   "datetime>=5.5",
@@ -26,6 +27,7 @@ dependencies = [
   "typed-argument-parser>=1.10.1",
   "unsloth>=2025.6.11",
   "unsloth-zoo>=2025.6.7",
+  "urllib3>=2.6.3",
   "uv>=0.7.17",
   "xformers>=0.0.30",
 ]

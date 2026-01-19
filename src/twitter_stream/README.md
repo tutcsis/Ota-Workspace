@@ -19,14 +19,82 @@ if lang == 'ja':
 ```
 
 # ランダムサンプリング&json整形
-- sample_1percent_ja_all.sh: 月毎のジョブを発行してsample_1percent_ja_month.shを実行
-- sample_1percent_ja_month.sh: 指定した月でsample_1percent_ja.pyを実行
-- sample_1percent_ja.py: ランダムサンプリングをして、必要なフィールドだけを抽出したjsonに整形する。
-	- 入力: data/twitter_stream/sample-archive_str_ja2/
-	- 出力: data/twitter_stream/sample_1percent_ja/
+- sample_ja2json_all.sh: 月毎のジョブを発行して sample_ja2json_month.sh を実行
+- sample_ja2json_month.sh: 指定した月で sample_ja2json.py を実行
+- sample_ja2json.py: ランダムサンプリングをして、必要なフィールドだけを抽出した json に整形する。
+	- 入力: data/twitter_stream/sampled-ja-0_001/
+	- 出力: data/twitter_stream/sampled_ja2json-0_001/
+
+- 土屋先生のデータをコピーする
+- data/twitter_stream/sampled-ja-0_001/
+- このフォルダはサンプリングまでをやってくれている。そこから、json整形をする必要がある
 
 
-## コード
+# 有害ラベル付与
+- set_all_toxic_label.sh: 月毎のジョブを発行して set_month_toxic_label.sh を実行
+- set_month_toxic_label.sh: 指定した月で src/setfit/setfit_predict.py を実行
+- src/setfit/setfit_predict.py: 現在のjsonデータに7つの有害ラベルを付与
+	- 入力: data/twitter_stream/sampled-ja-0_001/
+	- 出力: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 学習元データセット: data/llmjp_toxicity_dataset/train_len4_dataset.jsonl
+	- 学習済みモデル: models/few-shot/ruri-v3-310m_len1024_yesno4
+
+# 有害テキスト分類
+## ユーザの利用年数による分類
+- 例えば、あるユーザが2012年1月から投稿をしているとする。このとき、2015年2月では、ユーザの利用年数は3年とする。
+
+
+
+- src/twitter_stream/count_twlen_yearly.py
+	- ユーザ一覧の表を作成し、さらに各ユーザの月毎の投稿回数と有害投稿回数を算出する
+	- その結果を用いて、指定した月・ユーザにおけるグループを算出する
+	- 最後に、各月におけるグループの個数を算出する(ユーザごとの投稿数を合計)
+	- ツイートデータ(事前に用意): SAMPLED_TWEET_PATH
+	- ユーザ一覧: SAMPLED_USERS_PATH
+	- ユーザごとの投稿回数の表: SAMPLED_ALL_TWLEN_TABLE_PATH
+	- 各月における、グループごとの投稿数の表: SAMPLED_G_TWLEN_TABLE_PATH
+
+## 投稿の文字数による分類
+- まず、投稿の文字数の分布を出力する
+- src/twitter_stream/new_group_analyze/2-1_count_text_len.py
+	- 投稿文字数をカウントし、文字数ごとの出現回数を数える。それらを表とグラフにする
+	- ツイート: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 表: tables/new_group_analyze/2-1_text_len.csv
+	- グラフ: imgs/new_group_analyze/2-1_text_len.png
+
+<!-- - src/data_analyze/make_all_tw_len_graph.py: 
+	- get_all_ja_tweet_text.shで、ツイートjsonのテキストのみを抽出していた。
+	- 各文字の出現回数をカウントする
+	- 投稿テキストのみを保存したデータ: SAMPLED_ALL_JA_TW_TEXT_PATH
+	- 各文字の出現回数の表: ALL_TWLEN_TABLE_PATH
+	- 画像: ALL_TWLEN_GRAPH_PATH -->
+
+- 出力から、どのように分類をすればいいかを決定する(前回はグループ1が10~80文字, グループ2が81文字以上)
+- 次に、決定した分類方法に従いラベル付けをする
+- src/twitter_stream/new_group_analyze/2-2_grouping_by_textlength.py
+	- グループ1(仮:10~80)とグループ2(仮:81~)の投稿数を月毎・有害ラベルごとに算出する
+	- noise_len: 10
+	- labeling_len: 80
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 表: tables/new_group_analyze/2-2_textlen_group/
+
+	<!-- - src/twitter_stream/new_count_tweets_by_twlength.py: 投稿の文字数によるグループのラベル付け(基準は前回のものなのでコードを変える必要がある) -->
+
+
+
+
+## 投稿に添付されているメディア・URLの有無による分類
+- src/twitter_stream/new_group_analyze/3-1_grouping_by_media.py
+	- 成形済みのjsonデータのurls, media要素に値が入っているかを確認する
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 表: tables/new_group_analyze/3-3_media_group/
+
+## 投稿をしている端末による分類
+
+
+
+
+<!-- ## コード
 - concat_csv.py: 2つのテーブルを結合して新しいテーブルにして出力
 - get_tweet.py: ランダムでツイートを選んで辞書型で出力
 	- 入力形式
@@ -122,4 +190,4 @@ if lang == 'ja':
 	..
 	123456789
 	```
-- sample_100_tweet.py: sample_hour1000_tweets.pyの前のバージョン。ランダムで100ツイートを選ぶバージョン
+- sample_100_tweet.py: sample_hour1000_tweets.pyの前のバージョン。ランダムで100ツイートを選ぶバージョン -->
