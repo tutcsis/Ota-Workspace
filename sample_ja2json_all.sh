@@ -1,4 +1,5 @@
-GPUQOPTS="-q gLrchq -l select=1:ncpus=1:mem=32G:ngpus=1:vnode="
+GPUQOPTS="-q gLrchq -l select=1:ncpus=1:mem=32G:ngpus=1"
+# GPUQOPTS="-q gLrchq -l select=1:ncpus=1:mem=32G:ngpus=1:vnode="
 DOCKER_IMAGE="imc.tut.ac.jp/transformers-pytorch-cuda118:4.37.2"
 
 # INPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/"
@@ -14,7 +15,8 @@ for month in "${months[@]}"; do
     echo "Table for month ${month} already exists. Skipping..."
     continue
   fi
-  qsub ${GPUQOPTS}${nodes[counter]} -N sample_ja2json_${month} -k doe -j oe -o ./log/sample_ja2json -v DOCKER_IMAGE=${DOCKER_IMAGE},month=${month} sample_ja2json_month.sh
+  qsub ${GPUQOPTS} -N sample_ja2json_${month} -k doe -j oe -o ./log/sample_ja2json -v DOCKER_IMAGE=${DOCKER_IMAGE},month=${month} sample_ja2json_month.sh
+  # qsub ${GPUQOPTS}${nodes[counter]} -N sample_ja2json_${month} -k doe -j oe -o ./log/sample_ja2json -v DOCKER_IMAGE=${DOCKER_IMAGE},month=${month} sample_ja2json_month.sh
   counter=$((counter + 1))
   if [ $counter -ge ${#nodes[@]} ]; then
     counter=0

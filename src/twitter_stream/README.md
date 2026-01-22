@@ -40,7 +40,28 @@ if lang == 'ja':
 	- 学習済みモデル: models/few-shot/ruri-v3-310m_len1024_yesno4
 
 # 有害テキスト分類
-## ユーザの利用年数による分類
+
+## 0. 有害投稿の割合
+- src/twitter_stream/new_group_analyze/0-1_filter_ja_sampling.py
+	- まず、日本語投稿を抽出して、ランダムサンプリングを行う。
+
+- src/twitter_stream/new_group_analyze/0-2_format_json.py
+	- 次に、ツイートのjsonデータを成形して必要な情報のみを取り出す
+
+- src/twitter_stream/new_group_analyze/0-3_setfit_predict.py
+	- 有害ラベルを付与
+
+- new_group_analyze_0-4_count_toxic.sh
+	- 有害投稿数を月毎に計算
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 表: tables/new_group_analyze/0-4_toxic_count.csv
+
+- src/twitter_stream/new_group_analyze/0-5_make_toxic_count_graph.py
+	- 有害投稿数を月毎にグラフにする
+	- 表: tables/new_group_analyze/0-4_toxic_count.csv
+	- グラフ: imgs/new_group_analyze/0-4_toxic_count.png
+
+## 1. ユーザの利用年数による分類
 - 例えば、あるユーザが2012年1月から投稿をしているとする。このとき、2015年2月では、ユーザの利用年数は3年とする。
 
 
@@ -54,22 +75,17 @@ if lang == 'ja':
 	- ユーザごとの投稿回数の表: SAMPLED_ALL_TWLEN_TABLE_PATH
 	- 各月における、グループごとの投稿数の表: SAMPLED_G_TWLEN_TABLE_PATH
 
-## 投稿の文字数による分類
+## 2. 投稿の文字数による分類
 - まず、投稿の文字数の分布を出力する
 - src/twitter_stream/new_group_analyze/2-1_count_text_len.py
 	- 投稿文字数をカウントし、文字数ごとの出現回数を数える。それらを表とグラフにする
-	- ツイート: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
 	- 表: tables/new_group_analyze/2-1_text_len.csv
 	- グラフ: imgs/new_group_analyze/2-1_text_len.png
 
-<!-- - src/data_analyze/make_all_tw_len_graph.py: 
-	- get_all_ja_tweet_text.shで、ツイートjsonのテキストのみを抽出していた。
-	- 各文字の出現回数をカウントする
-	- 投稿テキストのみを保存したデータ: SAMPLED_ALL_JA_TW_TEXT_PATH
-	- 各文字の出現回数の表: ALL_TWLEN_TABLE_PATH
-	- 画像: ALL_TWLEN_GRAPH_PATH -->
-
 - 出力から、どのように分類をすればいいかを決定する(前回はグループ1が10~80文字, グループ2が81文字以上)
+	- グラフの概形は前回とそれほど変わっていなかった。
+
 - 次に、決定した分類方法に従いラベル付けをする
 - src/twitter_stream/new_group_analyze/2-2_grouping_by_textlength.py
 	- グループ1(仮:10~80)とグループ2(仮:81~)の投稿数を月毎・有害ラベルごとに算出する
@@ -78,18 +94,25 @@ if lang == 'ja':
 	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
 	- 表: tables/new_group_analyze/2-2_textlen_group/
 
-	<!-- - src/twitter_stream/new_count_tweets_by_twlength.py: 投稿の文字数によるグループのラベル付け(基準は前回のものなのでコードを変える必要がある) -->
+- src/twitter_stream/new_group_analyze/2-3_make_textlength_graph.py
+	- グループ1, 2 の割合を月毎・有害ラベルごとに出力
+	- 表: tables/new_group_analyze/2-2_textlen_group/
+	- グラフ: imgs/new_group_analyze/2-3_textlen_group/
 
 
-
-
-## 投稿に添付されているメディア・URLの有無による分類
+## 3. 投稿に添付されているメディア・URLの有無による分類
 - src/twitter_stream/new_group_analyze/3-1_grouping_by_media.py
 	- 成形済みのjsonデータのurls, media要素に値が入っているかを確認する
 	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
 	- 表: tables/new_group_analyze/3-3_media_group/
 
-## 投稿をしている端末による分類
+- src/twitter_stream/new_group_analyze/3-2_make_media_graph.py
+	- 分類結果の表をグラフに出力
+	- 表: tables/new_group_analyze/3-3_media_group/
+	- グラフ: imgs/new_group_analyze/3-2_media_graph/
+
+
+## 4. 投稿をしている端末による分類
 
 
 

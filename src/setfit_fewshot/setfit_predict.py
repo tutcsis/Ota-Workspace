@@ -17,8 +17,8 @@ from typing import Literal
 from collections import Counter
 
 class Args(Tap):
-	# dataset_path: str = "data/twitter_stream/text-archive_ja/sampling/2011-09.jsonl"
-	# output_path: str = "data/twitter_stream/toxic-archive_ja/sampling/2011-09.jsonl"
+	# dataset_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/sampled_ja2json-0_001/2011-10.jsonl"
+	# output_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/sampled-toxic_ja-0_001/2011-10.jsonl"
 	dataset_path: str = ""
 	output_path: str = ""
 

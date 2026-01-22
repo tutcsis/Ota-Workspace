@@ -1,16 +1,18 @@
-from pathes import (
-  TOXIC_LABEL,
-)
-import utils
 import os
 import json
 import pandas as pd
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import utils
+from pathes import (
+  TOXIC_LABEL,
+)
 from tap import Tap
 from tqdm import tqdm
 from collections import Counter
 
 class Args(Tap):
-  data_path: str = 
+  data_path: str = "data/twitter_stream/sampled-toxic_ja-0_001/"
   table_path: str = "tables/new_group_analyze/2-2_textlen_group/"
   table_columns: list = ['1', '2', 'all']
   noise_len: int = 10

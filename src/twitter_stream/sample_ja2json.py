@@ -9,6 +9,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
 class Args(Tap):
+	# dataset_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/sampled-ja-0_001/2019-09.jsonl"
+	# output_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/sampled_ja2json-0_001/"
+	# month: str = "2019-09"
 	dataset_path: str = ""
 	output_path: str = ""
 	month: str = ""
@@ -55,6 +58,23 @@ def labeling_machine(args, user_machine, host_name):
 			return args.twitter_machine_dict[key]
 	return "other"
 
+def get_text(tweet):
+	if 'retweeted_status' in tweet:
+		rt = tweet['retweeted_status']
+		if 'extended_tweet' in rt and 'full_text' in rt['extended_tweet']:
+			text = rt['extended_tweet']['full_text']
+		elif 'full_text' in rt:
+			text = rt['full_text']
+		else:
+			text = rt['text']
+	elif 'extended_tweet' in tweet and 'full_text' in tweet['extended_tweet']:
+		text = tweet['extended_tweet']['full_text']
+	elif 'full_text' in tweet:
+		text = tweet['full_text']
+	else:
+		text = tweet['text']
+	return text
+
 def get_json_info(file_path):
 	samples = []
 	with open(file_path, 'r', encoding='utf-8') as f:
@@ -88,7 +108,8 @@ def get_json_info(file_path):
 
 			samples.append({
 				"tweet_id": tweet_id,
-				"text": repr(json_data["text"])[1:-1],
+				"text": get_text(json_data),
+				# "text": repr(json_data["text"])[1:-1],
 				"user_id": json_data["user"]["id"],
 				"screen_name": json_data["user"]["screen_name"],
 				# "time": file.split('.txt')[0],
