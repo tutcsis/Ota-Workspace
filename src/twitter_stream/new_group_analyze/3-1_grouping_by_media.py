@@ -15,7 +15,7 @@ from collections import Counter
 
 class Args(Tap):
 	data_path: str = "data/twitter_stream/sampled-toxic_ja-0_001/"
-	table_path: str = "tables/new_group_analyze/3-3_media_group/"
+	table_path: str = "tables/new_group_analyze/3-1_media_group/"
 	toxic_label: list = TOXIC_LABEL
 	years: list = USE_YEARS
 	url_label: list = ["url", "media", "both", "other"]

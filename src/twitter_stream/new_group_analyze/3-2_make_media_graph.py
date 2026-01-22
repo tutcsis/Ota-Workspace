@@ -1,26 +1,23 @@
-from pathes import (
-	TOXIC_MEDIA_TABLE_PATH,
-	TOXIC_MEDIA_GRAPH_PATH,
-	ALL_MEDIA_TABLE,
-	ALL_MEDIA_GRAPH_PATH,
-	TOXIC_LABEL,
-	USE_YEARS,
-	GROUP
-)
-import utils
 import os
 import json
 import matplotlib.pyplot as plt
 import japanize_matplotlib
 import numpy as np
 import pandas as pd
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import utils
+from pathes import (
+	TOXIC_LABEL,
+	USE_YEARS,
+)
 from tap import Tap
 from tqdm import tqdm
 from collections import Counter
 
 class Args(Tap):
-  table_path: str = "tables/new_group_analyze/3-3_media_group/"
-  graph_path: str = "imgs/new_group_analyze/3-2_media_graph/"
+	table_path: str = "tables/new_group_analyze/3-1_media_group/"
+	graph_path: str = "imgs/new_group_analyze/3-2_media_graph/"
 	toxic_label: list = TOXIC_LABEL
 	years: list = USE_YEARS
 	groups: list = ["url", "media", "both", "other"]

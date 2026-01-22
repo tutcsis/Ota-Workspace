@@ -104,11 +104,11 @@ if lang == 'ja':
 - src/twitter_stream/new_group_analyze/3-1_grouping_by_media.py
 	- 成形済みのjsonデータのurls, media要素に値が入っているかを確認する
 	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
-	- 表: tables/new_group_analyze/3-3_media_group/
+	- 表: tables/new_group_analyze/3-1_media_group/
 
 - src/twitter_stream/new_group_analyze/3-2_make_media_graph.py
 	- 分類結果の表をグラフに出力
-	- 表: tables/new_group_analyze/3-3_media_group/
+	- 表: tables/new_group_analyze/3-1_media_group/
 	- グラフ: imgs/new_group_analyze/3-2_media_graph/
 
 
