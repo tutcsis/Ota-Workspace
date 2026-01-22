@@ -33,35 +33,18 @@ class Args(Tap):
 		'other': 'forestgreen',
 	}
 
-def draw_bar(args, start_year, start_month, end_year, end_month):
-	start_num = (start_year - 2012) * 12 + (start_month - 1)
-	end_num = (end_year - 2012) * 12 + (end_month - 1)
-	plt.axvspan(start_num, end_num, color='lightsalmon', alpha=0.5)
-
 def make_graph(args, file_path, graph_file, toxic=None):
 	df = pd.read_csv(file_path, index_col=0)
 	
-	# change values to percentage
-	for group in args.groups:
-		df[str(group)] = df[str(group)]/df['all']*100
-	df = df.drop('all', axis=1)
-	# print(df)
-
-	# make graph
 	plt.figure()
-	df.plot.bar(stacked=True, color=[args.colors[str(g)] for g in args.groups])
+	for group in args.groups:
+		df[group] = df[group]/df['all']*100
+		plt.plot(df.index, df[group], marker='o', color=args.colors[group], linewidth=1, markersize=5, label=group)
+	df = df.drop('all', axis=1)
 	
-	# 投稿数が異常に多い月を強調表示
-	# 2012-01, 2013-03
-	# draw_bar(args, 2012, 1, 2013, 3)
-
-	# 2019-5, 2020-12
-	# draw_bar(args, 2019, 5, 2020, 12)
-
-
+	# df.plot.bar(stacked=True, color=[args.colors[str(g)] for g in args.groups])
+	
 	plt.title(f"{args.graph_title} ({toxic})")
-	plt.legend().remove()
-	plt.legend(bbox_to_anchor=(1, 1))
 	plt.xlabel(args.graph_xlabel)
 	plt.ylabel(args.graph_ylabel)
 	plt.xticks(
@@ -69,6 +52,9 @@ def make_graph(args, file_path, graph_file, toxic=None):
 		args.years + [""],
 		rotation=0
 	)
+	plt.yticks(range(0, 101, 20))
+	plt.grid()
+	plt.legend(loc='upper right')
 	plt.tight_layout()
 	plt.savefig(graph_file)
 	plt.close()
