@@ -1,25 +1,25 @@
 # ツイートを端末ごとに分類
-from pathes import (
-	TOXIC_LABEL,
-	USE_YEARS
-)
-import utils
 import os
 import json
 import numpy as np
 import pandas as pd
 import random
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+import utils
+from pathes import (
+	TOXIC_LABEL,
+	USE_YEARS
+)
 from tap import Tap
 from tqdm import tqdm
 from collections import Counter
 from bs4 import BeautifulSoup
 
 class Args(Tap):
-	input_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/1000-toxic-sampling-machine_add/"
-	# input_path: str = "/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive_ja/2012-10/"
-	# machine_list: str = "/work/s245302/Ota-Workspace/tables/machine_counts.txt"
-	machine_list: str = "/work/s245302/Ota-Workspace/tables/twitter_machine_counts.txt"
-	host_list: str = "/work/s245302/Ota-Workspace/tables/host_counts.txt"
+	input_path: str = "data/twitter_stream/sampled-toxic_ja-0_001/"
+	machine_list: str = "tables/new_group_analyze/4-1_count_machine/machine_count.txt"
+	host_list: str = "tables/new_group_analyze/4-1_count_machine/host_count.txt"
 	toxic_label: list = TOXIC_LABEL
 	years: list = USE_YEARS
 	sample_len: int = 1000
@@ -111,10 +111,10 @@ def main(args):
 	for machine, count in sorted_machines:
 		if i == 10:
 			break
-		# if count < 100:
-		# 	continue
-		# if machine.startswith("Twitter"):
-		# 	print(f"{i},{machine},{count}")
+		if count < 100:
+			continue
+		if machine.startswith("Twitter"):
+			print(f"{i},{machine},{count}")
 		print(f"{i},{machine},{count}")
 		i += 1
 
@@ -128,30 +128,30 @@ def main(args):
 
 	sorted_hosts = sorted(host_counts.items(), key=lambda x: x[1], reverse=True)
 	total_host_count = sum(host_counts.values())
-	i = 1
+	# i = 1
 	# print("rank,host,count")
-	for host, count in sorted_hosts:
-		# if i == 50:
-		# 	break
-		# if count < 100:
-		# 	continue
-		# if ".twitter.com" in host:
-		# 	print(f"{i},{host},{count}")
-		i += 1
+	# for host, count in sorted_hosts:
+	# 	if i == 50:
+	# 		break
+	# 	if count < 100:
+	# 		continue
+	# 	if ".twitter.com" in host:
+	# 		print(f"{i},{host},{count}")
+	# 	i += 1
 
-		# tweet_len = count_lines(file_path)
-		# sample_keys = random.sample(range(tweet_len), min(args.sample_len, tweet_len))
-		# print(sample_keys)
-		# with open(file_path, 'r', encoding='utf-8') as f:
-		# 	for i, line in enumerate(f):
-		# 		if i in sample_keys:
-		# 			tweet_id, json_str = line.strip().split("\t")
-		# 			json_data = json.loads(json_str)
-		# 			user_machine = BeautifulSoup(json_data.get("source", ""), "html.parser").get_text()
-		# 			print(user_machine)
-		# break
+	# 	tweet_len = count_lines(file_path)
+	# 	sample_keys = random.sample(range(tweet_len), min(args.sample_len, tweet_len))
+	# 	print(sample_keys)
+	# 	with open(file_path, 'r', encoding='utf-8') as f:
+	# 		for i, line in enumerate(f):
+	# 			if i in sample_keys:
+	# 				tweet_id, json_str = line.strip().split("\t")
+	# 				json_data = json.loads(json_str)
+	# 				user_machine = BeautifulSoup(json_data.get("source", ""), "html.parser").get_text()
+	# 				print(user_machine)
+	# 	break
 
-	print(f"Total tweet count: {total_count}")
+	# print(f"Total tweet count: {total_count}")
 
 if __name__ == "__main__":
 	args = Args().parse_args()

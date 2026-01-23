@@ -62,22 +62,21 @@ if lang == 'ja':
 	- グラフ: imgs/new_group_analyze/0-4_toxic_count.png
 
 ## 1. ユーザの利用年数による分類
-- 例えば、あるユーザが2012年1月から投稿をしているとする。このとき、2015年2月では、ユーザの利用年数は3年とする。
+- src/twitter_stream/new_group_analyze/1-1_grouping_by_usage_years.py
+	- 各ユーザの初投稿月を保存
+	- 各月のファイルを見て、ユーザ、年月を取得
+	- ユーザリストから初投稿つきを取得し、年数を算出
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- ユーザリスト: tables/new_group_analyze/1-1_user_fast_month.json
+	- 表: tables/new_group_analyze/1-1_usage_group/
 
-
-
-- src/twitter_stream/count_twlen_yearly.py
-	- ユーザ一覧の表を作成し、さらに各ユーザの月毎の投稿回数と有害投稿回数を算出する
-	- その結果を用いて、指定した月・ユーザにおけるグループを算出する
-	- 最後に、各月におけるグループの個数を算出する(ユーザごとの投稿数を合計)
-	- ツイートデータ(事前に用意): SAMPLED_TWEET_PATH
-	- ユーザ一覧: SAMPLED_USERS_PATH
-	- ユーザごとの投稿回数の表: SAMPLED_ALL_TWLEN_TABLE_PATH
-	- 各月における、グループごとの投稿数の表: SAMPLED_G_TWLEN_TABLE_PATH
+- src/twitter_stream/new_group_analyze/1-2_make_usage_graph.py
+	- 表: tables/new_group_analyze/1-1_usage_group/
+	- グラフ: imgs/new_group_analyze/1-2_usage_group/
 
 ## 2. 投稿の文字数による分類
-- まず、投稿の文字数の分布を出力する
 - src/twitter_stream/new_group_analyze/2-1_count_text_len.py
+	- まず、投稿の文字数の分布を出力する
 	- 投稿文字数をカウントし、文字数ごとの出現回数を数える。それらを表とグラフにする
 	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
 	- 表: tables/new_group_analyze/2-1_text_len.csv
@@ -113,8 +112,21 @@ if lang == 'ja':
 
 
 ## 4. 投稿をしている端末による分類
+- src/twitter_stream/new_group_analyze/4-1_count_machine.py
+	-  端末ランキングとホストランキングを出力する
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 端末リスト: tables/new_group_analyze/4-1_count_machine/machine_count.txt
+	- ホストリスト: tables/new_group_analyze/4-1_count_machine/host_count.txt
 
+- src/twitter_stream/new_group_analyze/4-2_grouping_by_machine.py
+	- 成形済みのjsonデータのmachine要素の値を集計する
+	- 有害投稿データ: data/twitter_stream/sampled-toxic_ja-0_001/
+	- 表: tables/new_group_analyze/4-2_machine_group/
 
+- src/twitter_stream/new_group_analyze/4-3_make_machine_graph.py
+	- 分類結果の表をグラフに出力
+	- 表: tables/new_group_analyze/4-2_machine_group/
+	- グラフ: imgs/new_group_analyze/4-3_machine_graph/
 
 
 <!-- ## コード
