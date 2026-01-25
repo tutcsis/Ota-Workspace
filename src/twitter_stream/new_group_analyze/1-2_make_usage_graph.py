@@ -52,6 +52,7 @@ def main(args):
 			df['all'] = df.sum(axis=1)
 		for group in args.groups:
 			df[str(group)] = df[str(group)]/df['all']*100
+			plt.plot(df.index, df[str(group)], marker='o', color=args.colors[str(group)], linewidth=1, markersize=5, label=str(group))
 		df = df.sort_index().drop('all', axis=1)
 		# print("id: ", list(df.index))
 		print(df)
@@ -63,7 +64,7 @@ def main(args):
 			rotation=0
 		)
 
-		plt.legend().remove()
+		# plt.legend().remove()
 		plt.legend(loc='lower right')
 		plt.title(f"{args.graph_title} ({toxic})")
 		plt.xlabel(args.graph_xlabel)

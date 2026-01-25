@@ -28,6 +28,9 @@ def make_user_list(args):
 	users = dict()
 	for file in tqdm(utils.get_file_names(args.input_path)):
 		month = file.split('.jsonl')[0]
+		year = month.split('-')[0]
+		if year not in args.years:
+			continue
 
 		file_path = os.path.join(args.input_path, file)
 		with open(file_path, 'r', encoding='utf-8') as f:
