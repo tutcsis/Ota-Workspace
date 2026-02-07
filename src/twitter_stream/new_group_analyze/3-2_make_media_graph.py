@@ -23,6 +23,7 @@ class Args(Tap):
 	groups: list = ["url", "media", "both", "other"]
 
 	# graph settings
+	label_mode = False
 	graph_title: str = "メディア・URLの有無によるグループ分け"
 	graph_xlabel: str = "投稿した年月"
 	graph_ylabel: str = "グループごとの割合[%]"
@@ -44,12 +45,13 @@ def make_graph(args, file_path, graph_file, toxic=None):
 	
 	# df.plot.bar(stacked=True, color=[args.colors[str(g)] for g in args.groups])
 	
-	plt.title(f"{args.graph_title} ({toxic})")
-	plt.xlabel(args.graph_xlabel)
-	plt.ylabel(args.graph_ylabel)
+	if args.label_mode:
+		plt.title(f"{args.graph_title} ({toxic})")
+		plt.xlabel(args.graph_xlabel)
+		plt.ylabel(args.graph_ylabel)
 	plt.xticks(
 		range(0, 12*len(args.years)+1, 12),
-		args.years + [""],
+		args.years + [str(int(args.years[-1])+1)],
 		rotation=0
 	)
 	plt.yticks(range(0, 101, 20))

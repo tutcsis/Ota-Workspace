@@ -24,6 +24,7 @@ class Args(Tap):
 	groups: list = GROUP
 
 	# graph settings
+	label_mode = False
 	graph_title: str = "投稿の文字数によるグループ分け"
 	graph_xlabel: str = "投稿した年月"
 	graph_ylabel: str = "グループ 1 の割合"
@@ -65,14 +66,15 @@ def main(args):
 		plt.yticks(range(0, 101, 10))
 		# ax.grid(True, axis='both', linestyle='--')
 
-		plt.title(f"{args.graph_title} ({toxic})")
-		plt.xlabel(args.graph_xlabel)
-		plt.ylabel(args.graph_ylabel)
+		if args.label_mode:
+			plt.title(f"{args.graph_title} ({toxic})")
+			plt.xlabel(args.graph_xlabel)
+			plt.ylabel(args.graph_ylabel)
 		# plt.legend()
 		# plt.legend().remove()
 		plt.xticks(
 			range(0, 12*len(args.years)+1, 12),
-			args.years + [""],
+			args.years + [str(int(args.years[-1])+1)],
 			rotation=0
 		)
 		plt.grid()

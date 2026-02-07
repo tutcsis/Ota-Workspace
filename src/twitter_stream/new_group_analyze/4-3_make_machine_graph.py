@@ -21,16 +21,17 @@ class Args(Tap):
 
 	# graph settings
 	colors = {
-		'iphone': 'deepskyblue',
-		'ipad': 'dodgerblue',
-		'android': 'limegreen',
-		'web': 'orange',
-		'other': 'gray',
+		'apple': 'darkorchid',
+		'android': 'royalblue',
+		'web': 'orangered',
+		'other': 'forestgreen',
 	}
 	ymax: int = 20
 
 
 def make_graph(args, file_path, graph_file, toxic=None):
+	# 積み上げ式のグラフを出力
+
 	df = pd.read_csv(file_path, index_col=0)
 	df = df.drop('androidtablet', axis=1)
 	
@@ -52,6 +53,7 @@ def make_graph(args, file_path, graph_file, toxic=None):
 	plt.close()
 
 def make_line_graph(args, table_path, graph_file, toxic=None):
+	# 各ラベルごとに棒グラフを出力する
 	df = pd.read_csv(table_path, index_col=0)
 	df = df.drop('androidtablet', axis=1)
 	
@@ -59,15 +61,19 @@ def make_line_graph(args, table_path, graph_file, toxic=None):
 	for machine in args.groups:
 		df[str(machine)] = df[str(machine)]/df['all']*100
 	df = df.drop('all', axis=1)
+	df = df.fillna(0)
+	df['apple'] = df['iphone'] + df['ipad']
+	df = df.drop(['iphone', 'ipad'], axis=1)
 
 	# make graph
 	plt.figure()
-	df.plot(color=[args.colors[str(m)] for m in args.groups])
+	df.plot(color=[args.colors[str(m)] for m in args.colors.keys()])
 	plt.xticks(
 		range(0, 12*len(args.years)+1, 12),
-		args.years + [""],
+		args.years + [str(int(args.years[-1])+1)],
 		rotation=0
 	)
+	plt.grid()
 	plt.legend(loc='upper right')
 	plt.yticks(range(0, 101, 10))
 	plt.ylim(0, 100)
@@ -76,6 +82,7 @@ def make_line_graph(args, table_path, graph_file, toxic=None):
 	plt.close()
 
 def make_rate_on_machine_graph(args, table_path, all_table_path, graph_file, toxic=None):
+	# 各ラベルごとに棒グラフを出力する(全体の投稿から割っている)
 	df = pd.read_csv(table_path, index_col=0)
 	df = df.drop('androidtablet', axis=1)
 	all_df = pd.read_csv(all_table_path, index_col=0)
@@ -84,6 +91,9 @@ def make_rate_on_machine_graph(args, table_path, all_table_path, graph_file, tox
 	# change values to percentage on iphone
 	for machine in args.groups:
 		df[machine] = df[machine]/all_df[machine]*100
+	df['apple'] = df['iphone'] + df['ipad']
+	df = df.drop('all', axis=1)
+	df = df.drop(['iphone', 'ipad'], axis=1)
 
 	# make graph
 	plt.figure()
@@ -109,10 +119,10 @@ def main(args):
 		table_path = os.path.join(args.toxic_table, f"{toxic}.csv")
 		graph_path = os.path.join(args.toxic_graph, f"{toxic}.png")
 		# make_graph(args, table_path, graph_path, toxic)
-		# make_line_graph(args, table_path, graph_path, toxic)
-		if toxic == 'all':
-			continue
-		make_rate_on_machine_graph(args, table_path, os.path.join(args.toxic_table, "all.csv"), graph_path, toxic)
+		make_line_graph(args, table_path, graph_path, toxic)
+		# if toxic == 'all':
+		# 	continue
+		# make_rate_on_machine_graph(args, table_path, os.path.join(args.toxic_table, "all.csv"), graph_path, toxic)
 
 if __name__ == "__main__":
 	args = Args().parse_args()
