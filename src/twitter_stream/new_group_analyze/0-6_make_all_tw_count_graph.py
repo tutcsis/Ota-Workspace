@@ -7,43 +7,39 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 import utils
 from pathes import (
 	USE_YEARS,
-	TOXIC_LABEL,
-	TOXIC_EN_JA,
+	TOXIC_LABEL
 )
 from tap import Tap
 
 class Args(Tap):
 	table_path: str = "tables/new_group_analyze/0-4_toxic_count.csv"
-	graph_path: str = "imgs/new_group_analyze/0-4_toxic_count.png"
+	graph_path: str = "imgs/new_group_analyze/0-6_all_tw_count.png"
 
 	label_mode = False
 	user_years: list = USE_YEARS
-	toxic_en_ja_dict: dict = TOXIC_EN_JA
 	graph_labels: list = TOXIC_LABEL
-	graph_title: str = "有害投稿数"
+	graph_title: str = "すべての投稿数"
 	graph_xlabel: str = "投稿した年月"
-	graph_ylabel: str = "有害投稿の割合"
+	graph_ylabel: str = "投稿数"
 	toxic_limit: int = 10
 
 def make_tweet_graph(args, df):
 	# スパム投稿を除外
-	for toxic in args.graph_labels:
+	# for toxic in args.graph_labels:
 		# 欠損値は 0 で割らないようにする
-		df.loc[df['total'] != 0, toxic] = df[toxic] / df['total'] * 100
-		df[toxic] = df[toxic].apply(lambda x: x if x <= args.toxic_limit else args.toxic_limit)
-	print(df.head()[args.graph_labels + ['total']])
+		# df[toxic] = df[toxic].apply(lambda x: x if x <= args.toxic_limit else args.toxic_limit)
+	# print(df.head()[args.graph_labels + ['total']])
 
 	print("Plotting rate graph[%]")
 	plt.figure()
-	for toxic in args.graph_labels:
-		plt.plot(df.index, df[toxic], label=args.toxic_en_ja_dict[toxic], marker='o')
+	plt.plot(df.index, df["total"], label="total", color='black',marker='o')
 	plt.xticks(
 		range(0, 12*len(args.user_years)+1, 12),
 		args.user_years + [str(int(args.user_years[-1])+1)]
 	)
 
 	plt.grid(True)
-	plt.legend()
+	# plt.legend()
 	if args.label_mode:
 		plt.title(f"{args.graph_title}")
 		plt.xlabel(args.graph_xlabel)

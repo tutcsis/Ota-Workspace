@@ -24,6 +24,7 @@ class Args(Tap):
 
 	max_twlen: int = 140
 
+	label_mode = False
 	graph_title: str = "ツイートの文字数の分布"
 	graph_xlabel: str = "文字数"
 	graph_ylabel: str = "出現回数"
@@ -55,10 +56,12 @@ def make_graph(args, tw_len_df, graph_path, grid_dis=10, max_twlen=None):
 		range(0, (max_twlen + 1)+1, grid_dis),
 		range(0, (max_twlen + 1)+1, grid_dis)
 	)
-	plt.title(args.graph_title)
-	plt.xlabel(args.graph_xlabel)
-	plt.ylabel(args.graph_ylabel)
-	plt.legend()
+	plt.ylim(0, 100000)
+	if args.label_mode:
+		plt.title(args.graph_title)
+		plt.xlabel(args.graph_xlabel)
+		plt.ylabel(args.graph_ylabel)
+	# plt.legend()
 	plt.grid(True)
 	plt.tight_layout()
 	plt.savefig(graph_path)

@@ -28,3 +28,8 @@ SAMPLED_POS_NEG_TABLE_PATH = "/work/s245302/Ota-Workspace/tables/sampled_toxic_p
 TOXIC_LABEL = ["obscene", "discriminatory", "violent"]
 USE_YEARS = ["2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
 GROUP = [0, 1, 2, 3, 4]
+TOXIC_EN_JA = {
+  "obscene": "わいせつ",
+  "discriminatory": "差別的",
+  "violent": "暴力的"
+}

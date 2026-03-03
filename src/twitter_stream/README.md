@@ -61,6 +61,12 @@ if lang == 'ja':
 	- 表: tables/new_group_analyze/0-4_toxic_count.csv
 	- グラフ: imgs/new_group_analyze/0-4_toxic_count.png
 
+- src/twitter_stream/new_group_analyze/0-6_make_all_tw_count_graph.py
+	- 投稿数を月毎にグラフにする
+	- 表: tables/new_group_analyze/0-4_toxic_count.csv
+	- グラフ: imgs/new_group_analyze/0-6_all_tw_count.png
+
+
 ## 1. ユーザの利用年数による分類
 - src/twitter_stream/new_group_analyze/1-1_grouping_by_usage_years.py
 	- 各ユーザの初投稿月を保存
