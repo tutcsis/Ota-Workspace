@@ -26,7 +26,7 @@ OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sampled_ja2json-0_0
 # OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample_0_1percent_ja/"
 
 echo "month=${month}"
-time uv run python src/twitter_stream/sample_ja2json.py \
+time uv run python src/twitter_stream/new_group_analyze/0-2_format_json.py \
   --dataset_path ${INPUT_PATH}${month}.jsonl \
   --output_path ${OUTPUT_PATH} \
   --month ${month}

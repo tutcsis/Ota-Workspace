@@ -43,12 +43,22 @@ if lang == 'ja':
 
 ## 0. 有害投稿の割合
 - src/twitter_stream/new_group_analyze/0-1_filter_ja_sampling.py
-	- まず、日本語投稿を抽出して、ランダムサンプリングを行う。
+	- まず、日本語投稿を抽出して、0.1%ランダムサンプリングを行う。
+	- all_sh: tweet_sampling_all.sh
 
 - src/twitter_stream/new_group_analyze/0-2_format_json.py
 	- 次に、ツイートのjsonデータを成形して必要な情報のみを取り出す
+	- 旧: src/twitter_stream/sample_ja2json.py
+	- all_sh: sample_ja2json_all.sh
+		- month_sh: sample_ja2json_month.sh
+	- 成形前: data/twitter_stream/sampled-ja-0_001/
+	- 成形後: data/twitter_stream/sampled_ja2json-0_001/
 
-- src/twitter_stream/new_group_analyze/0-3_setfit_predict.py
+- new_group_analyze_0-3_setfit_predict.sh
+	- 旧: set_all_toxic_label.sh
+		- 月ごと: set_month_toxic_label.sh
+	- 有害ラベル付与前: data/twitter_stream/sampled_ja2json-0_001/
+	- 有害ラベル付与後: data/twitter_stream/sampled-toxic_ja-0_001/
 	- 有害ラベルを付与
 
 - new_group_analyze_0-4_count_toxic.sh
@@ -133,102 +143,3 @@ if lang == 'ja':
 	- 分類結果の表をグラフに出力
 	- 表: tables/new_group_analyze/4-2_machine_group/
 	- グラフ: imgs/new_group_analyze/4-3_machine_graph/
-
-
-<!-- ## コード
-- concat_csv.py: 2つのテーブルを結合して新しいテーブルにして出力
-- get_tweet.py: ランダムでツイートを選んで辞書型で出力
-	- 入力形式
-	```txt
-	tweet_id  tweet_json
-	tweet_id  tweet_json
-	...
-	tweet_id  tweet_json
-	```
-	- 出力形式
-	```json
-	{
-		"tweet_id": "tweet_text",
-		"tweet_id": "tweet_text",
-		..,
-		"tweet_id": "tweet_text"
-	}
-	```
-
-- sample_hour1000_tweets.py: テキストファイルからランダムでツイートを選んで辞書型で出力
-	- 入力形式
-	```txt
-	tweet_id  tweet_json
-	tweet_id  tweet_json
-	...
-	tweet_id  tweet_json
-	```
-	- 出力形式
-	```json
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM"}
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM"}
-	..
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM"}
-	```
-
-- calc_random_toxic_user_tweets.py: ランダムで有害ユーザを選択して、そのユーザの各月での投稿数を集計する。保留
-- count_toxic_user.py: 月毎の有害ラベルが付与されたツイートから、有害ツイートをしているユーザと有害投稿数を算出して出力。さらに、月毎で有害ユーザ数を算出
-	- 入力形式
-	```json
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM", "personal": 0, "others": 0, "illegal": 0, "corporate": 0, "violent": 0, "discriminatory": 0, "obscene": 0}
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM", "personal": 0, "others": 0, "illegal": 0, "corporate": 0, "violent": 0, "discriminatory": 0, "obscene": 0}
-	..
-	{"tweet_id": "1111111111", "text": "ツイート", "user_id": 123456789, "screen_name": "yamada1234", "time": "YYYY-MM-DD-HH", "month": "YYYY-MM", "personal": 0, "others": 0, "illegal": 0, "corporate": 0, "violent": 0, "discriminatory": 0, "obscene": 0}
-	```
-	- 出力形式1(特定の月の有害ユーザのtoxicごとの有害投稿数)
-	```csv
-	toxic_user,obscene,discriminatory,violent
-	123456789,0,1,1
-	123456789,0,0,1
-	..
-	123456789,0,1,1
-	```
-	- 出力形式2(月毎のtoxicごとの有害ユーザ数)
-	```csv
-	,obscene,discriminatory,violent
-	2011-09,1111,222,333
-	2011-10,1111,222,333
-	..
-	2021-08,1111,222,333
-	```
-
-- make_toxic_user_list.py: 有害投稿をしているユーザidを一つのテキストファイルに出力
-	- 入力形式
-	```csv
-		toxic_user,obscene,discriminatory,violent
-	2408361,0,1,1
-	3271411,0,0,1
-	..
-	4674371,0,1,1
-	```
-	- 出力形式
-	```txt
-	123456789
-	123456789
-	..
-	123456789
-	```
-
-- compare_tweet_retweet.py: 
-- get_retweeted_id.py: 全てのtweet_idと全てのリツイート元tweet_id(以後retweet_id)をテキストファイルに保存
-	- 入力形式
-	```txt
-	tweet_id  tweet_json
-	tweet_id  tweet_json
-	...
-	tweet_id  tweet_json
-
-	```
-	- 出力形式(tweet_ids, retweet_ids)
-	```txt
-	123456789
-	123456789
-	..
-	123456789
-	```
-- sample_100_tweet.py: sample_hour1000_tweets.pyの前のバージョン。ランダムで100ツイートを選ぶバージョン -->

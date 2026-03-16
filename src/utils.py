@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 import torch
+import os
 
 
 def save_jsonl(data: pd.DataFrame | Iterable[dict] | dict[Any, Iterable], path: Path | str) -> None:
@@ -127,3 +128,13 @@ def init(
 
 	set_seed(seed)
 	torch.set_float32_matmul_precision(float32_matmul_precision)
+
+# load file from path
+def get_file_names(path: str):
+  return sorted([f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
+
+def get_file_pathes(path: str):
+  return sorted([os.path.join(path, f) for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))])
+
+def get_folder_names(path: str):
+  return sorted([f for f in os.listdir(path) if os.path.isdir(os.path.join(path, f))])
