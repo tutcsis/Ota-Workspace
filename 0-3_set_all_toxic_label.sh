@@ -14,8 +14,8 @@ for month in "${months[@]}"; do
     continue
   fi
   echo "Processing month: $month"
-  qsub ${GPUQOPTS} -N set_${month}_sampled-toxic_ja-0_001 -k doe -j oe -o ./log/sampled-toxic_ja-0_001 -v DOCKER_IMAGE=${DOCKER_IMAGE},INPUT_PATH=${INPUT_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} set_month_toxic_label.sh
-  # qsub ${GPUQOPTS}${nodes[counter]} -N set_${month}_sampled-toxic_ja-0_001 -k doe -j oe -o ./log/sampled-toxic_ja-0_001 -v DOCKER_IMAGE=${DOCKER_IMAGE},INPUT_PATH=${INPUT_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} set_month_toxic_label.sh
+  qsub ${GPUQOPTS} -N set_${month}_sampled-toxic_ja-0_001 -k doe -j oe -o ./log/sampled-toxic_ja-0_001 -v DOCKER_IMAGE=${DOCKER_IMAGE},INPUT_PATH=${INPUT_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} 0-3_set_month_toxic_label.sh
+  # qsub ${GPUQOPTS}${nodes[counter]} -N set_${month}_sampled-toxic_ja-0_001 -k doe -j oe -o ./log/sampled-toxic_ja-0_001 -v DOCKER_IMAGE=${DOCKER_IMAGE},INPUT_PATH=${INPUT_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} 0-3_set_month_toxic_label.sh
   counter=$((counter + 1))
   if [ $counter -ge ${#nodes[@]} ]; then
     counter=0

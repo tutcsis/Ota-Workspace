@@ -10,8 +10,23 @@
 	- llmjp_toxicity_dataset: 有害テキストデータセット。有害テキスト判定モデルの学習・評価に使用
 	- perspective_api_toxicity: Perspective API を用いて有害ラベルが付与されたツイート。吉田先生から提供していただいたが、研究では使わなかった。
 	- twitter_steram: 分析に使用した、ツイートデータ。技科大のクラスタの中の吉田先生のアカウントに格納されているツイートデータをコピーしている。
+		- ja_retweet_ids: 日本語リツイート元のツイートID
+		- ja_tweet_ids: 日本語ツイートID
+		- sample-archive_ja: 日本語ツイートデータ
+		- sample-archive-twitterstream: 全言語のツイートデータ
+		- sampled_ja2json-0_001: 0.1% サンプリングした日本語ツイートの必要な要素を抽出したデータ
+		- sampled-ja-0_001: 0.1% サンプリングした日本語ツイートデータ
+		- sampled-toxic_ja-0_001: 0.1%サンプリングした日本語有害ラベル付きツイートデータ
+		- tw_data_archive: 過去使用していたツイートデータ
 - imgs: 分析結果などの画像を格納
+	- img_archive: 過去使用していたグラフ
+	- new_group_analyze: **有害投稿の分析**結果のグラフ
 - log: `qsub XX.sh` でジョブを実行したときに、生成されるジョブのログファイルを格納
+	- copy_twitter_stream: `copy_all_twitter_stream.sh` の実行ログを格納
+	- log_archive: 過去使用していたログファイルを格納
+	- run_all: `run_all.sh` の実行ログを格納
+	- sample_ja2json: `sample_ja2json_all.sh` の実行ログを格納
+	- twitter_sampling: `twitter_sampling_all.sh` の実行ログを格納
 - models: `outputs` フォルダで生成されたモデルのうち、分析に使用するものを手動で格納
 	- lora-multiclassification/llm-jp-3-1.8b_len1024_yesno16: llm-jp を用いて LLM+LoRA 学習をした結果
 	- few-shot/ruri-v3-310m_len1024_yesno4: ruri を用いて setfit 学習をした結果
@@ -26,30 +41,33 @@
 	- src_archive: 過去使用していたソースコード
 	- twitter_stream: **有害投稿の分析**に使用したソースコード
 - tables: 分析結果などの表(`.csv`)を格納
+	- csv_archive: 過去使用していた表
+	- new_group_analyze: **有害投稿の分析**結果の表
 
 # 有害ツイートの割合の分析
 ## ツイートデータのコピー
 - 学内の計算機にあるツイートデータをこのリポジトリにコピーする
 - 元データ: `/work/my016/mirror/twitter-stream/{month}/{file}.txt`
-- コピー先: `/work/s245302/Ota-Workspace/data/twitter_stream/{month}/{file}.txt`
+- コピー先: `/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive-twitterstream/{month}/{file}.txt`
 - `copy_all_twitter_stream.sh`: `DATA_PATH` から月毎のフォルダ名を取得して、各フォルダ名を `copy_month_twitter_stream.sh` に渡してジョブとして実行している。
 - `copy_month_twitter_stream.sh`: `copy_all_twitter_stream.sh` から受け取ったある月のフォルダ名の直下にあるファイルを全て `OUTPUT_PATH` にコピーする。ファイルの解凍は `gunzip` コマンドを使用
 
 ## 0. 有害投稿の割合の算出
 - `src/twitter_stream/new_group_analyze/0-1_filter_ja_sampling.py`
 	- まず、日本語投稿を抽出して、0.1%ランダムサンプリングを行う。
-	- all_sh: `tweet_sampling_all.sh`
+	- all_sh: `0-1_tweet_sampling_all.sh`
+	- 元データ: `/work/my016/mirror/sample-archive-twitterstream/`
+	- サンプリング後のデータ: `data/twitter_stream/sampled-ja-0_001/`
 
 - `src/twitter_stream/new_group_analyze/0-2_format_json.py`
 	- 次に、ツイートのjsonデータを成形して必要な情報のみを取り出す
 	- all_sh: `sample_ja2json_all.sh`
-		- month_sh: `sample_ja2json_month.sh`
+		- month_sh: `0-2_sample_ja2json_month.sh`
 	- 成形前: `data/twitter_stream/sampled-ja-0_001/`
 	- 成形後: `data/twitter_stream/sampled_ja2json-0_001/`
 
-- `new_group_analyze_0-3_setfit_predict.sh`
-	- 旧: `set_all_toxic_label.sh`
-		- 月ごと: `set_month_toxic_label.sh`
+- `0-3_set_all_toxic_label.sh`
+	- 月ごと: `0-3_set_month_toxic_label.sh`
 	- 有害ラベル付与前: `data/twitter_stream/sampled_ja2json-0_001/`
 	- 有害ラベル付与後: `data/twitter_stream/sampled-toxic_ja-0_001/`
 	- 有害ラベルを付与

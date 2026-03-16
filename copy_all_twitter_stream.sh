@@ -7,5 +7,5 @@ OUTPUT_PATH="/work/s245302/Ota-Workspace/data/twitter_stream/sample-archive-twit
 months=($(ls $DATA_PATH))
 for month in "${months[@]}"; do
   echo "Processing month: $month"
-  qsub ${GPUQOPTS} -N copy_${month}_twitter_stream -k doe -j oe -o ./log -v DOCKER_IMAGE=${DOCKER_IMAGE},DATA_PATH=${DATA_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} copy_month_twitter_stream.sh
+  qsub ${GPUQOPTS} -N copy_${month}_twitter_stream -k doe -j oe -o ./log/copy_twitter_stream -v DOCKER_IMAGE=${DOCKER_IMAGE},DATA_PATH=${DATA_PATH},OUTPUT_PATH=${OUTPUT_PATH},month=${month} copy_month_twitter_stream.sh
 done
